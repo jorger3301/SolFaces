@@ -1,11 +1,10 @@
-#!/usr/bin/env node
 // ═══════════════════════════════════════════════════════════════
 // SOLFACES — MCP Server
 // Standalone Model Context Protocol server for Claude Code,
 // Cursor, Windsurf, and any MCP-compatible client.
 //
 // Usage:
-//   npx solfaces-mcp
+//   npx solfaces
 //   node dist/agent/mcp-server.cjs
 //
 // Claude Code config (~/.claude/settings.json):

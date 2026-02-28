@@ -387,7 +387,7 @@ Add to your MCP config (`~/.claude/settings.json` or `.cursor/mcp.json`):
   "mcpServers": {
     "solfaces": {
       "command": "npx",
-      "args": ["solfaces-mcp"]
+      "args": ["-y", "solfaces"]
     }
   }
 }

@@ -1,14 +1,13 @@
 {
   "name": "solfaces",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Deterministic wallet avatars for the Solana ecosystem. Zero-dependency trait engine with React, vanilla JS, and server-side rendering support.",
   "author": "https://github.com/jorger3301",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jorger3301/solfaces"
+    "url": "git+https://github.com/jorger3301/solfaces.git"
   },
-  "homepage": "https://solfaces.dev",
   "keywords": [
     "solana",
     "avatar",
@@ -65,7 +64,7 @@
     "./cdn": "./dist/solfaces.cdn.global.js"
   },
   "bin": {
-    "solfaces-mcp": "./dist/agent/mcp-server.cjs"
+    "solfaces-mcp": "dist/agent/mcp-server.cjs"
   },
   "files": [
     "dist",
