@@ -356,7 +356,10 @@ def describe_appearance(
     else:
         hc = _HAIR_COLOR_DESC.get(t.hair_color, "")
         hs = _HAIR_STYLE_DESC.get(t.hair_style, "")
-        parts.append(f"and {hc} {hs}")
+        if hs.startswith("a "):
+            parts.append(f"and a {hc} {hs[2:]}")
+        else:
+            parts.append(f"and {hc} {hs}")
 
     # Assemble main sentence
     desc = parts[0]

@@ -70,6 +70,7 @@
   "files": [
     "dist",
     "python",
+    "skill.md",
     "README.md",
     "LICENSE"
   ],

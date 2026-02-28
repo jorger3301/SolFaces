@@ -303,6 +303,17 @@ import {
 } from "solfaces/agent";
 ```
 
+### Skill File for AI Agents
+
+SolFaces includes a comprehensive `skill.md` that teaches AI agents how to integrate, customize, and use SolFaces. Feed it to any agent (Claude, GPT, custom bots) as context:
+
+- How to install and import for any platform
+- React component usage with themes, animations, and styling
+- Server-side rendering and API route patterns
+- Custom theme creation to match any UI
+- Bot integration (Discord, Telegram)
+- All 5 tool definitions with parameters and usage guidance
+
 ---
 
 ## REST API Templates

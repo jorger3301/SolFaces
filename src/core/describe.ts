@@ -220,6 +220,8 @@ function buildParagraph(
   const hairColor = HAIR_COLORS_DESC[t.hairColor] ?? "";
   if (t.hairStyle === 0) {
     parts.push("and is bald");
+  } else if (hairStyle.startsWith("a ")) {
+    parts.push(`and a ${hairColor} ${hairStyle.slice(2)}`);
   } else {
     parts.push(`and ${hairColor} ${hairStyle}`);
   }
@@ -279,7 +281,9 @@ function buildStructured(t: SolFaceTraits, includeBg: boolean): string {
   if (t.hairStyle === 0) {
     lines.push("Hair: bald");
   } else {
-    lines.push(`Hair: ${HAIR_COLORS_DESC[t.hairColor] ?? ""} ${HAIR_STYLES[t.hairStyle] ?? ""}`);
+    const hs = HAIR_STYLES[t.hairStyle] ?? "";
+    const hc = HAIR_COLORS_DESC[t.hairColor] ?? "";
+    lines.push(`Hair: ${hc} ${hs.startsWith("a ") ? hs.slice(2) : hs}`);
   }
 
   const acc = ACCESSORY_DESC[t.accessory];
@@ -302,7 +306,9 @@ function buildCompact(t: SolFaceTraits): string {
   if (t.hairStyle === 0) {
     parts.push("bald");
   } else {
-    parts.push(`${HAIR_COLORS_DESC[t.hairColor] ?? ""} ${HAIR_STYLES[t.hairStyle]?.replace(/,.*/, "") ?? "hair"}`);
+    const hs = (HAIR_STYLES[t.hairStyle] ?? "hair").replace(/,.*/, "");
+    const hc = HAIR_COLORS_DESC[t.hairColor] ?? "";
+    parts.push(`${hc} ${hs.startsWith("a ") ? hs.slice(2) : hs}`);
   }
 
   const acc = ACCESSORY_DESC[t.accessory];
