@@ -1,4 +1,4 @@
-# 🟢 SolFaces
+#  SolFaces
 
 **Deterministic wallet avatars for the Solana ecosystem.**
 
