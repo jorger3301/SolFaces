@@ -79,8 +79,16 @@ function handleRequest(req: MCPRequest): MCPResponse {
   }
 
   if (method === "tools/call") {
-    const toolName = (params as Record<string, unknown>)?.name as string;
-    const toolArgs = ((params as Record<string, unknown>)?.arguments ?? {}) as Record<string, unknown>;
+    const p = params as Record<string, unknown> | undefined;
+    if (!p || typeof p.name !== "string") {
+      return {
+        jsonrpc: "2.0",
+        id,
+        error: { code: -32602, message: "Missing required 'name' parameter in tools/call" },
+      };
+    }
+    const toolName = p.name as string;
+    const toolArgs = (p.arguments ?? {}) as Record<string, unknown>;
 
     const tool = SOLFACE_TOOLS.find((t) => t.name === toolName);
     if (!tool) {

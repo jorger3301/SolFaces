@@ -147,21 +147,24 @@ MOUTH_LABELS = ["Smile", "Neutral", "Grin", "Open", "Smirk", "Wide Smile"]
 HAIR_LABELS = ["Bald", "Short", "Spiky", "Swept", "Mohawk", "Long", "Bob", "Buzz"]
 ACC_LABELS = ["None", "None", "Round Glasses", "Square Glasses", "Earring", "Bandana"]
 HAIR_COLOR_LABELS = ["Black", "Brown", "Blonde", "Ginger", "Neon Lime", "Neon Blue", "Solana Mint", "Neon Magenta"]
+SKIN_LABELS = ["Light Peach", "Warm Tan", "Golden Brown", "Medium Brown", "Deep Brown", "Rich Dark Brown"]
+EYE_COLOR_LABELS = ["Dark Brown", "Blue", "Green", "Amber", "Gray"]
+BG_COLOR_LABELS = ["Lime", "Blue", "Mint", "Sand", "Red"]
 
 def get_trait_labels(traits: SolFaceTraits) -> Dict[str, str]:
     """Human-readable labels for all traits."""
     return {
         "faceShape": FACE_LABELS[traits.face_shape],
-        "skinColor": f"Tone {traits.skin_color + 1}",
+        "skinColor": SKIN_LABELS[traits.skin_color] if traits.skin_color < len(SKIN_LABELS) else "Warm Tan",
         "eyeStyle": EYE_LABELS[traits.eye_style],
-        "eyeColor": EYE_COLORS[traits.eye_color] if traits.eye_color < len(EYE_COLORS) else "Unknown",
+        "eyeColor": EYE_COLOR_LABELS[traits.eye_color] if traits.eye_color < len(EYE_COLOR_LABELS) else "Dark Brown",
         "eyebrows": BROW_LABELS[traits.eyebrows],
         "nose": NOSE_LABELS[traits.nose],
         "mouth": MOUTH_LABELS[traits.mouth],
         "hairStyle": HAIR_LABELS[traits.hair_style],
         "hairColor": HAIR_COLOR_LABELS[traits.hair_color],
         "accessory": ACC_LABELS[traits.accessory],
-        "bgColor": f"Color {traits.bg_color + 1}",
+        "bgColor": BG_COLOR_LABELS[traits.bg_color] if traits.bg_color < len(BG_COLOR_LABELS) else "Lime",
     }
 
 
@@ -288,20 +291,24 @@ def render_data_uri(wallet_address: str, **kwargs) -> str:
 
 # ─── Description ──────────────────────────────────────────────
 
-_FACE_DESC = {0: "round", 1: "square", 2: "oval", 3: "angular hexagonal"}
+_FACE_DESC = {0: "round", 1: "square with softly rounded corners", 2: "oval", 3: "angular, hexagonal"}
 _SKIN_DESC = {0: "light peach", 1: "warm tan", 2: "golden brown", 3: "medium brown", 4: "deep brown", 5: "rich dark brown"}
-_EYE_STYLE_DESC = {0: "round", 1: "dot-like", 2: "almond-shaped", 3: "wide", 4: "sleepy", 5: "winking", 6: "lashed", 7: "narrow"}
+_EYE_STYLE_DESC = {0: "round, wide-open", 1: "small and dot-like", 2: "almond-shaped", 3: "wide and expressive", 4: "sleepy, half-lidded", 5: "playfully winking", 6: "adorned with lashes", 7: "narrow and observant"}
 _EYE_COLOR_DESC = {0: "dark brown", 1: "blue", 2: "green", 3: "amber", 4: "gray"}
-_HAIR_STYLE_DESC = {0: "bald", 1: "short", 2: "spiky", 3: "side-swept", 4: "mohawk", 5: "long", 6: "bob", 7: "buzz cut"}
-_HAIR_COLOR_DESC = {0: "black", 1: "brown", 2: "blonde", 3: "ginger", 4: "neon lime", 5: "neon blue", 6: "Solana mint", 7: "neon magenta"}
-_MOUTH_DESC = {0: "smile", 1: "neutral expression", 2: "wide grin", 3: "open mouth", 4: "smirk", 5: "toothy smile"}
-_ACC_DESC = {0: "", 1: "", 2: "round glasses", 3: "square glasses", 4: "gold earring", 5: "red bandana"}
+_BROW_DESC = {0: "", 1: "thin", 2: "thick, prominent", 3: "elegantly arched", 4: "sharply angled"}
+_NOSE_DESC = {0: "", 1: "a small dot nose", 2: "a triangular nose", 3: "a button nose with visible nostrils"}
+_HAIR_STYLE_DESC = {0: "bald, with no hair", 1: "short, neatly cropped hair", 2: "tall, spiky hair", 3: "side-swept hair", 4: "a bold mohawk", 5: "long hair that falls past the shoulders", 6: "a clean bob cut", 7: "a close buzz cut"}
+_HAIR_COLOR_DESC = {0: "jet black", 1: "brown", 2: "blonde", 3: "ginger red", 4: "neon lime green", 5: "neon blue", 6: "Solana mint green", 7: "neon magenta"}
+_MOUTH_DESC = {0: "a gentle smile", 1: "a neutral, straight expression", 2: "a wide grin", 3: "a small, open mouth", 4: "a confident smirk", 5: "a broad, toothy smile"}
+_ACC_DESC = {0: "", 1: "", 2: "round glasses", 3: "square-framed glasses", 4: "a gold earring", 5: "a red bandana"}
+_BG_DESC = {0: "lime green", 1: "blue", 2: "Solana mint green", 3: "warm sand", 4: "red"}
 
 
 def describe_appearance(
     wallet_address: str,
     perspective: str = "third",
     name: Optional[str] = None,
+    include_background: bool = True,
 ) -> str:
     """
     Generate natural language description of a SolFace.
@@ -310,40 +317,81 @@ def describe_appearance(
         wallet_address: Solana wallet address
         perspective: "first" for agent self-description, "third" for external
         name: Optional name (e.g., agent name)
+        include_background: Include background color in description
 
     Returns:
         Human-readable appearance description
     """
     t = generate_traits(wallet_address)
 
+    # Subject intro
     if perspective == "first":
         subj = f"I'm {name}. I have" if name else "I have"
+        im = "I'm"
     else:
         subj = f"{name} has" if name else "This SolFace has"
+        im = "They're"
 
+    # Build parts list
+    parts = []
+
+    # Face + skin
     face = _FACE_DESC.get(t.face_shape, "round")
     skin = _SKIN_DESC.get(t.skin_color, "warm")
+    parts.append(f"{subj} a {face} face with {skin} skin")
+
+    # Eyes
     eye_s = _EYE_STYLE_DESC.get(t.eye_style, "round")
     eye_c = _EYE_COLOR_DESC.get(t.eye_color, "dark")
+    parts.append(f"{eye_s} {eye_c} eyes")
 
-    desc = f"{subj} a {face} face with {skin} skin and {eye_s} {eye_c} eyes"
+    # Eyebrows
+    brows = _BROW_DESC.get(t.eyebrows, "")
+    if brows:
+        parts.append(f"{brows} eyebrows")
 
+    # Hair
     if t.hair_style == 0:
-        desc += ", and is bald"
+        parts.append("and is bald")
     else:
         hc = _HAIR_COLOR_DESC.get(t.hair_color, "")
         hs = _HAIR_STYLE_DESC.get(t.hair_style, "")
-        desc += f", with {hc} {hs} hair"
+        parts.append(f"and {hc} {hs}")
 
+    # Assemble main sentence
+    desc = parts[0]
+    if len(parts) > 2:
+        desc += ", " + ", ".join(parts[1:-1]) + ", " + parts[-1]
+    elif len(parts) == 2:
+        desc += " and " + parts[1]
     desc += "."
 
+    # Nose
+    nose = _NOSE_DESC.get(t.nose, "")
+    if nose:
+        if perspective == "first":
+            nose_subj = "I have"
+        else:
+            nose_subj = f"{name} has" if name else "They have"
+        desc += f" {nose_subj} {nose}."
+
+    # Accessory
     acc = _ACC_DESC.get(t.accessory, "")
     if acc:
-        wearing = "I'm" if perspective == "first" else "They're"
-        desc += f" {wearing} wearing {acc}."
+        desc += f" {im} wearing {acc}."
 
-    mouth = _MOUTH_DESC.get(t.mouth, "smile")
-    desc += f" Expression: {mouth}."
+    # Mouth
+    mouth = _MOUTH_DESC.get(t.mouth, "a smile")
+    if perspective == "first":
+        mouth_subj = "I have"
+    else:
+        mouth_subj = f"{name} has" if name else "They have"
+    desc += f" {mouth_subj} {mouth}."
+
+    # Background
+    if include_background:
+        bg = _BG_DESC.get(t.bg_color, "colorful")
+        desc += f" The background is {bg}."
 
     return desc
 
@@ -356,7 +404,7 @@ def agent_appearance_prompt(wallet_address: str, agent_name: Optional[str] = Non
         prompt = agent_appearance_prompt("7xKXq...", "Atlas")
         system_prompt = f"You are Atlas, an AI agent. {prompt}"
     """
-    desc = describe_appearance(wallet_address, perspective="first", name=agent_name)
+    desc = describe_appearance(wallet_address, perspective="first", name=agent_name, include_background=False)
     h = trait_hash(wallet_address)
     return f"My visual identity is a SolFace avatar (ID: {h}) derived from my wallet address. {desc} This appearance is deterministic — anyone who looks up my wallet will see the same face."
 
