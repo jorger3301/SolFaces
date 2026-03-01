@@ -6,6 +6,8 @@ Every Solana wallet address generates a unique, consistent face — no API calls
 
 Built for dApps, AI agents, social features, leaderboards, and anywhere a wallet needs a visual identity.
 
+![SolFaces Themes](solfaces-themes-labeled.png)
+
 ---
 
 ## Why SolFaces?
