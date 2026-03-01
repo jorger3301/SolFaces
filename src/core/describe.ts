@@ -193,7 +193,7 @@ function buildParagraph(
   const hairStyle = HAIR_STYLES[t.hairStyle] ?? "";
   const hairColor = HAIR_COLORS_DESC[t.hairColor] ?? "";
   if (t.hairStyle === 0) {
-    parts.push("and is bald");
+    parts.push(perspective === "first" ? "and am bald" : "and is bald");
   } else if (hairStyle.startsWith("a ")) {
     parts.push(`and a ${hairColor} ${hairStyle.slice(2)}`);
   } else {
@@ -283,7 +283,8 @@ function buildCompact(t: SolFaceTraits): string {
   if (t.hairStyle === 0) {
     parts.push("bald");
   } else {
-    const hs = (HAIR_STYLES[t.hairStyle] ?? "hair").replace(/,.*/, "");
+    const raw = HAIR_STYLES[t.hairStyle] ?? "hair";
+    const hs = raw.includes(",") ? raw.replace(/.*,\s*/, "") : raw;
     const hc = HAIR_COLORS_DESC[t.hairColor] ?? "";
     parts.push(`${hc} ${hs.startsWith("a ") ? hs.slice(2) : hs}`);
   }

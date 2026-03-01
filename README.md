@@ -29,7 +29,7 @@ Built for dApps, AI agents, social features, leaderboards, and anywhere a wallet
 - **Detail levels** — Full detail (gradients, specular, cheeks) at size >= 48, simplified below.
 - **Fully customizable** — Every visual element is customizable: 4 color palettes, 8 individual color overrides, 9 per-instance color keys, rendering toggles, layout controls, blink timing, and 30+ React-only pixel/glass fields. No visual element is locked — if you can see it, you can theme it.
 - **Eliminates dead space** — No more blank avatars or generic placeholders. Every wallet gets a unique face instantly.
-- **AI-agent ready** — Natural language self-descriptions for agent system prompts.
+- **AI-agent ready** — AI trading bots and autonomous agents are becoming on-chain users. SolFaces gives every agent a recognizable face and a natural language self-description for system prompts and bios.
 - **PNG rasterization** — Serve real image files for bots, Discord, Telegram, OG images.
 - **SSR-ready** — String renderer works server-side with zero browser APIs.
 
@@ -196,7 +196,7 @@ import { glassTheme, glassDarkTheme } from "solfaces/themes";
 
 ## AI Agent Identity
 
-SolFaces gives AI agents a visual identity tied to their wallet. The `describeAppearance()` function generates natural language descriptions agents can use in system prompts to know and reference what they look like.
+AI trading bots, autonomous agents, and on-chain programs are becoming users — they need a visual identity, a personality, and a recognizable presence. SolFaces gives every agent a deterministic face tied to their wallet, plus natural language self-descriptions they can use in system prompts to know and reference what they look like.
 
 ### System Prompt Integration
 

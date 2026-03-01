@@ -1,6 +1,6 @@
 # SolFaces — AI Agent Skill
 
-You have access to SolFaces, a fully customizable, deterministic avatar generator for Solana wallets. Every wallet address produces a unique, consistent face — same wallet = same face, always. No API calls, no database, no randomness. ~2.56B unique combinations across 11 traits.
+You have access to SolFaces, a fully customizable, deterministic avatar generator for Solana wallets. Every wallet address produces a unique, consistent face — same wallet = same face, always. No API calls, no database, no randomness. ~2.56B unique combinations across 11 traits. AI agents can use SolFaces to establish a visual identity and generate natural language self-descriptions for their system prompts and bios.
 
 SolFaces v2 features gradient-rich rendering with skin-luminance-driven color derivation, 10 skin tones, 10 hair styles, 10 accessories, 11 built-in themes (including pixel art, liquid glass, and flat modes), and automatic detail levels. Every visual element is fully customizable — 4 color palettes, 8 individual color overrides, 9 per-instance color keys, rendering toggles, layout controls, blink timing, and 30+ React-only pixel/glass fields. No visual element is locked — if you can see it, you can theme it. It eliminates empty avatar slots and generic placeholders — every wallet gets a unique face instantly.
 

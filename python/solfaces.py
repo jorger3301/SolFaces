@@ -641,7 +641,7 @@ def _build_paragraph(
         parts.append(f"{brows} eyebrows")
 
     if t.hair_style == 0:
-        parts.append("and is bald")
+        parts.append("and am bald" if perspective == "first" else "and is bald")
     else:
         hc = _HAIR_COLOR_DESC.get(t.hair_color, "")
         hs = _HAIR_STYLE_DESC.get(t.hair_style, "")
@@ -710,7 +710,8 @@ def _build_compact(t, ai: int) -> str:
     if t.hair_style == 0:
         parts.append("bald")
     else:
-        hs = _HAIR_STYLE_DESC.get(t.hair_style, "hair").split(",")[0]
+        raw = _HAIR_STYLE_DESC.get(t.hair_style, "hair")
+        hs = raw.split(",")[-1].strip() if "," in raw else raw
         hc = _HAIR_COLOR_DESC.get(t.hair_color, "")
         parts.append(f"{hc} {hs[2:] if hs.startswith('a ') else hs}")
     acc = _ACC_DESC.get(ai, "")
