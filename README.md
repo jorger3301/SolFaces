@@ -1,12 +1,17 @@
 # SolFaces
 
+[![npm version](https://img.shields.io/npm/v/solfaces)](https://www.npmjs.com/package/solfaces)
+[![npm downloads](https://img.shields.io/npm/dw/solfaces)](https://www.npmjs.com/package/solfaces)
+[![license](https://img.shields.io/npm/l/solfaces)](https://github.com/jorger3301/SolFaces/blob/main/LICENSE)
+[![bundle size](https://img.shields.io/bundlephobia/minzip/solfaces)](https://bundlephobia.com/package/solfaces)
+
 **Deterministic wallet avatars for the Solana ecosystem.**
 
 Every Solana wallet address generates a unique, consistent face — no API calls, no storage, no randomness. Same wallet = same face, everywhere, forever.
 
 Built for dApps, AI agents, social features, leaderboards, and anywhere a wallet needs a visual identity.
 
-![SolFaces Themes](solfaces-themes-labeled.png)
+![SolFaces theme showcase showing Default, Light, Dark, Mono, Flat, Transparent, Pixel, Pixel Retro, Pixel Clean, Glass, and Glass Dark rendering modes](solfaces-themes-labeled.png)
 
 ---
 
