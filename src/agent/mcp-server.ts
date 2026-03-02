@@ -4,7 +4,7 @@
 // Cursor, Windsurf, and any MCP-compatible client.
 //
 // Usage:
-//   npx solfaces
+//   npx solfaces-mcp
 //   node dist/agent/mcp-server.cjs
 //
 // Claude Code config (~/.claude/settings.json):

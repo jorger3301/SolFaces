@@ -654,7 +654,7 @@ const result = await handleToolCall("generate_solface_svg", {
   "mcpServers": {
     "solfaces": {
       "command": "npx",
-      "args": ["-y", "solfaces"]
+      "args": ["-y", "solfaces-mcp"]
     }
   }
 }
@@ -920,7 +920,7 @@ solfaces/
 │   ├── agent/
 │   │   ├── tools.ts        # 6 canonical tool definitions + handlers
 │   │   ├── index.ts        # Format adapters (MCP, OpenAI, Anthropic, Vercel AI)
-│   │   └── mcp-server.ts   # Standalone MCP server (npx solfaces)
+│   │   └── mcp-server.ts   # Standalone MCP server (npx solfaces-mcp)
 │   ├── cdn.ts              # IIFE bundle for <script> tag
 │   ├── api-templates.ts    # Copy-paste route handlers
 │   └── index.ts

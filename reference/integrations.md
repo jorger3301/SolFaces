@@ -36,7 +36,7 @@ import {
   "mcpServers": {
     "solfaces": {
       "command": "npx",
-      "args": ["-y", "solfaces"]
+      "args": ["-y", "solfaces-mcp"]
     }
   }
 }
