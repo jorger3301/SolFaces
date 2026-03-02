@@ -4,6 +4,14 @@ All notable changes to SolFaces will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.1.2] — 2026-03-01
+
+### Improved
+
+- **SKILL.md discoverability** — Added trigger phrases (Solana PFP, deterministic identity, wallet names) and "When to use" sections for all 6 tools.
+- **CI workflow** — Added lint step to GitHub Actions pipeline.
+- **README badges** — Added TypeScript and dynamic CI status badges.
+
 ## [2.1.1] — 2026-03-01
 
 ### Added
