@@ -4,6 +4,8 @@
 [![npm downloads](https://img.shields.io/npm/dw/solfaces)](https://www.npmjs.com/package/solfaces)
 [![license](https://img.shields.io/npm/l/solfaces)](https://github.com/jorger3301/SolFaces/blob/main/LICENSE)
 [![bundle size](https://img.shields.io/bundlephobia/minzip/solfaces)](https://bundlephobia.com/package/solfaces)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue)](https://www.typescriptlang.org/)
+[![tests](https://img.shields.io/badge/tests-156%20passing-brightgreen)](https://github.com/jorger3301/SolFaces)
 
 **Deterministic wallet avatars and names for the Solana ecosystem.**
 
