@@ -47,6 +47,7 @@ export interface SolFaceTheme {
   cheekOpacity?: number;
   skinOpacity?: number;
   shadowEnabled?: boolean;
+  glowIntensity?: number;
 
   // React-only: pixel art mode
   _pixel?: boolean;

@@ -11,7 +11,7 @@ Every Solana wallet address generates a unique, consistent face and a determinis
 
 Built for dApps, AI agents, social features, leaderboards, and anywhere a wallet needs a visual identity.
 
-![SolFaces theme showcase showing Default, Light, Dark, and Mono rendering modes](solfaces-themes-labeled.png)
+![SolFaces theme showcase showing Default, Light, Dark, and Mono rendering modes](assets/solfaces-themes-labeled.png)
 
 *Default, Light, Dark, and Mono — four of the 11 built-in themes. Each row shows the same 10 wallets rendered in a different theme.*
 
@@ -228,9 +228,30 @@ parseSolName("SunnyIcon#2f95");
 // → { adjective: "Sunny", noun: "Icon", discriminator: "2f95" }
 ```
 
-- **1000 adjectives + 1000 nouns** — curated positive/neutral PascalCase words
+### Custom Word Lists
+
+Both `deriveName` and `deriveIdentity` accept an optional `DeriveOptions` parameter to fully customize name generation:
+
+```ts
+import { deriveName, deriveIdentity } from "solfaces";
+import type { DeriveOptions } from "solfaces";
+
+const opts: DeriveOptions = {
+  adjectives: ["Fast", "Bold", "Calm", "Keen", "Wise"],
+  nouns: ["Tiger", "Eagle", "Bear", "Wolf", "Hawk"],
+  domain: "my-app-v1",                  // Custom domain prefix (default: "solnames-v1")
+  blockedCombos: new Set(["BoldBear"]), // Custom blocked pairs
+};
+
+deriveName("7xKXqR...", "display", opts);   // Uses custom word lists
+deriveIdentity("7xKXqR...", opts);          // Full identity with custom lists
+```
+
+All fields are optional — omit any to use the built-in defaults.
+
+- **1000 adjectives + 1000 nouns** — curated positive/neutral PascalCase words (customizable via `DeriveOptions`)
 - **Same name everywhere** — TypeScript, Python, CDN, and server all produce identical output
-- **Blocked combinations** — offensive adjective+noun pairs are automatically skipped
+- **Blocked combinations** — offensive adjective+noun pairs are automatically skipped (customizable via `DeriveOptions`)
 
 ---
 
@@ -706,8 +727,8 @@ For sites without a build step — Webflow, Notion embeds, plain HTML, WordPress
 
 | Function | Returns | Description |
 |----------|---------|-------------|
-| `deriveName(wallet, format?)` | `string` | Deterministic name from wallet (SHA-256) |
-| `deriveIdentity(wallet)` | `SolNameIdentity` | Full identity bundle from wallet |
+| `deriveName(wallet, format?, options?)` | `string` | Deterministic name from wallet (SHA-256) |
+| `deriveIdentity(wallet, options?)` | `SolNameIdentity` | Full identity bundle from wallet |
 | `generateTraits(wallet, overrides?)` | `SolFaceTraits` | Deterministic traits from wallet |
 | `getTraitLabels(traits)` | `Record<string, string>` | Human-readable trait names |
 | `traitHash(wallet)` | `string` | 8-char hex hash |

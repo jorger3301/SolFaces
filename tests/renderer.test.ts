@@ -115,6 +115,27 @@ describe("renderSolFaceSVG", () => {
       expect(svg).toMatch(/<\/svg>$/);
     }
   });
+
+  it("default glow uses 0.1 opacity", () => {
+    const svg = renderSolFaceSVG(WALLET, { detail: "full" });
+    expect(svg).toContain('stop-opacity="0.1"');
+  });
+
+  it("custom glowIntensity changes glow opacity", () => {
+    const svg = renderSolFaceSVG(WALLET, {
+      detail: "full",
+      theme: { glowIntensity: 0.35 },
+    });
+    expect(svg).toContain('stop-opacity="0.35"');
+  });
+
+  it("glowIntensity 0 disables glow", () => {
+    const svg = renderSolFaceSVG(WALLET, {
+      detail: "full",
+      theme: { glowIntensity: 0 },
+    });
+    expect(svg).toContain('stop-opacity="0"');
+  });
 });
 
 describe("renderSolFaceDataURI", () => {

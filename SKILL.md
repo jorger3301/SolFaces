@@ -38,6 +38,8 @@ Natural language description of a wallet's avatar.
 | `perspective` | string | No | third | third or first |
 | `name` | string | No | -- | Name to use instead of "This SolFace" |
 
+Returns: description string. Auto-populates `name` from `deriveName(wallet, "display")` if no name provided.
+
 ### `get_solface_traits`
 Raw trait data with human-readable labels and hash.
 
@@ -45,7 +47,7 @@ Raw trait data with human-readable labels and hash.
 |-----------|------|----------|-------------|
 | `wallet` | string | Yes | Solana wallet address |
 
-Returns: `{ traits, labels, hash, name }`
+Returns: `{ traits: SolFaceTraits, labels: Record<string, string>, hash: string, name: string }`. Name is auto-populated from `deriveName(wallet, "display")`.
 
 ### `get_agent_identity`
 System prompt snippet giving an AI agent a visual identity.
@@ -55,7 +57,7 @@ System prompt snippet giving an AI agent a visual identity.
 | `wallet` | string | Yes | Agent's wallet address |
 | `agentName` | string | No | Agent name for personalization |
 
-Returns: First-person identity prompt string.
+Returns: First-person identity prompt string. Auto-populates agent name from `deriveName(wallet, "display")` if no `agentName` provided.
 
 ### `derive_solname`
 Derive a deterministic name from a wallet via SHA-256 hashing and curated word lists.
@@ -110,7 +112,7 @@ curl -O https://raw.githubusercontent.com/jorger3301/solfaces/main/python/solfac
 ### React
 ```tsx
 import { SolFace } from "solfaces/react";
-<SolFace walletAddress="7xKXtg..." size={48} enableBlink showName />
+<SolFace walletAddress="7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU" size={48} enableBlink showName />
 ```
 
 ### Server-side
@@ -135,6 +137,13 @@ const id = deriveIdentity("7xKXtg...");  // full identity object
   const name = SolFaces.deriveName("7xKXtg...");
   SolFaces.mount("#avatar", "7xKXtg...", { size: 64 });
 </script>
+```
+
+### Python
+```python
+from solfaces import render_svg, describe_appearance, derive_name
+svg = render_svg("7xKXtg...", size=256)
+name = derive_name("7xKXtg...")
 ```
 
 ---
@@ -163,7 +172,7 @@ For comprehensive documentation on specific topics:
 
 - **Deterministic**: Same wallet = same face + same name. djb2 + mulberry32 PRNG (traits), SHA-256 + mulberry32 PRNG (names).
 - **11 traits**: Face shape (4), skin (10), eye style (8), eye color (5), eyebrows (5), nose (4), mouth (8), hair style (10), hair color (10), accessory (10), background (10) = ~2.56B unique faces.
-- **SolNames**: 1000 adjectives + 1000 nouns, SHA-256 derived. Formats: short, display (~1M), tag (~65.5B), full (~1T).
+- **SolNames**: 1000 adjectives + 1000 nouns, SHA-256 derived. Formats: short, display (~1M), tag (~65.5B), full (~1T). Custom word lists supported via `DeriveOptions`.
 - **Earring suppression**: Long and bob hairstyles suppress earring accessories.
 - **Cross-language parity**: JS and Python produce identical output.
 - **Zero dependencies**: Core engine has no runtime deps.

@@ -53,7 +53,7 @@ export type { PNGOptions } from "./core/rasterize";
 // SolNames — deterministic name derivation
 export { deriveName, deriveIdentity, isValidSolName, parseSolName } from "./names";
 export { ADJECTIVES, NOUNS, SOLNAMES_VERSION } from "./names";
-export type { NameFormat, SolNameIdentity, ParsedSolName } from "./names";
+export type { NameFormat, SolNameIdentity, ParsedSolName, DeriveOptions } from "./names";
 
 // Themes
 export {

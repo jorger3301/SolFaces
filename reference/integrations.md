@@ -87,6 +87,51 @@ app.get("/api/solface/:wallet", (req, res) => {
 });
 ```
 
+### RenderOptions
+
+Options accepted by `renderSolFaceSVG()`, `renderSolFaceDataURI()`, `renderSolFaceBase64()`, and `renderSolFacePNG()`:
+
+```ts
+interface RenderOptions {
+  size?: number;                    // Default: 64
+  theme?: SolFaceTheme;
+  detail?: "full" | "simplified" | "auto";
+  enableBlink?: boolean | { duration?: number; delay?: number };
+  traitOverrides?: Partial<SolFaceTraits>;
+  colorOverrides?: {
+    skin?: string; eyes?: string; hair?: string; bg?: string;
+    mouth?: string; eyebrow?: string; accessory?: string;
+    nose?: string; eyeWhite?: string;
+  };
+}
+```
+
+### Server-side Color Overrides
+
+```ts
+import { renderSolFaceSVG } from "solfaces";
+import { darkTheme } from "solfaces/themes";
+
+const svg = renderSolFaceSVG("7xKXtg...", {
+  theme: darkTheme,
+  colorOverrides: { skin: "#ffd5b0", eyes: "#00ff00" },
+});
+```
+
+### Custom Name Derivation
+
+```ts
+import { deriveName, deriveIdentity } from "solfaces";
+import type { DeriveOptions } from "solfaces";
+
+const opts: DeriveOptions = {
+  adjectives: ["Fast", "Bold", "Calm"],
+  nouns: ["Tiger", "Eagle", "Bear"],
+};
+deriveName("7xKXtg...", "display", opts);  // uses custom word lists
+deriveIdentity("7xKXtg...", opts);         // full identity with custom lists
+```
+
 ---
 
 ## PNG Rasterization

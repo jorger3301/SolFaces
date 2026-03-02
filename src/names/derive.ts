@@ -19,18 +19,32 @@ function mulberry32(seed: number): () => number {
 
 const DOMAIN = `solnames-${SOLNAMES_VERSION}:`;
 
+/** Options for customizing name derivation. */
+export interface DeriveOptions {
+  /** Custom adjective word list (default: built-in 1000 adjectives) */
+  adjectives?: readonly string[];
+  /** Custom noun word list (default: built-in 1000 nouns) */
+  nouns?: readonly string[];
+  /** Custom blocked adjective+noun combinations (default: built-in set) */
+  blockedCombos?: Set<string>;
+  /** Custom domain prefix for SHA-256 hashing (default: "solnames-v1") */
+  domain?: string;
+}
+
 /**
  * Derive a deterministic name from a Solana wallet address.
  *
  * @param wallet  Base58 wallet address
  * @param format  Name format (default: "display")
+ * @param options  Custom word lists, domain, or blocked combos
  * @returns Formatted name string
  */
 export function deriveName(
   wallet: string,
   format: NameFormat = "display",
+  options?: DeriveOptions,
 ): string {
-  const id = deriveIdentity(wallet);
+  const id = deriveIdentity(wallet, options);
   switch (format) {
     case "short":
       return id.short;
@@ -47,9 +61,17 @@ export function deriveName(
  * Derive the full identity bundle for a wallet address.
  * Returns all four name formats plus component parts.
  */
-export function deriveIdentity(wallet: string): SolNameIdentity {
-  const hash = sha256(DOMAIN + wallet);
-  const hex = sha256Hex(DOMAIN + wallet);
+export function deriveIdentity(
+  wallet: string,
+  options?: DeriveOptions,
+): SolNameIdentity {
+  const adjectives = options?.adjectives ?? ADJECTIVES;
+  const nouns = options?.nouns ?? NOUNS;
+  const blocked = options?.blockedCombos ?? BLOCKED_COMBOS;
+  const domain = options?.domain ? `${options.domain}:` : DOMAIN;
+
+  const hash = sha256(domain + wallet);
+  const hex = sha256Hex(domain + wallet);
 
   // Seed PRNG from first 4 bytes (big-endian)
   const seed =
@@ -57,16 +79,16 @@ export function deriveIdentity(wallet: string): SolNameIdentity {
   const rng = mulberry32(seed);
 
   // Pick first adj+noun pair, retrying if blocked
-  let adj1 = ADJECTIVES[Math.floor(rng() * ADJECTIVES.length)];
-  let noun1 = NOUNS[Math.floor(rng() * NOUNS.length)];
-  while (BLOCKED_COMBOS.has(adj1 + noun1)) {
-    adj1 = ADJECTIVES[Math.floor(rng() * ADJECTIVES.length)];
-    noun1 = NOUNS[Math.floor(rng() * NOUNS.length)];
+  let adj1 = adjectives[Math.floor(rng() * adjectives.length)];
+  let noun1 = nouns[Math.floor(rng() * nouns.length)];
+  while (blocked.has(adj1 + noun1)) {
+    adj1 = adjectives[Math.floor(rng() * adjectives.length)];
+    noun1 = nouns[Math.floor(rng() * nouns.length)];
   }
 
   // Pick second adj+noun pair for full format
-  const adj2 = ADJECTIVES[Math.floor(rng() * ADJECTIVES.length)];
-  const noun2 = NOUNS[Math.floor(rng() * NOUNS.length)];
+  const adj2 = adjectives[Math.floor(rng() * adjectives.length)];
+  const noun2 = nouns[Math.floor(rng() * nouns.length)];
 
   // Discriminator from bytes 8-9 (4 hex chars)
   const discriminator = hex.slice(16, 20);

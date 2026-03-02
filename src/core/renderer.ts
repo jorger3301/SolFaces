@@ -40,6 +40,7 @@ function buildDefs(
   cheekOpacity: number,
   flat: boolean,
   full: boolean,
+  glowIntensity: number,
 ): string {
   if (flat) return "";
 
@@ -66,7 +67,7 @@ function buildDefs(
   if (full) {
     // Glow (radial, top center)
     d += `<radialGradient id="${id}glow" cx="0.5" cy="0.28" r="0.45">`;
-    d += `<stop offset="0%" stop-color="#ffffff" stop-opacity="0.10"/>`;
+    d += `<stop offset="0%" stop-color="#ffffff" stop-opacity="${glowIntensity}"/>`;
     d += `<stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>`;
     d += `</radialGradient>`;
 
@@ -508,7 +509,8 @@ export function renderSolFaceSVG(
   let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="${size}" height="${size}"${classAttr}>`;
 
   // Defs
-  svg += buildDefs(id, skin, derived.skinHi, derived.skinLo, hairCol, bgCol, cheekColor, cheekOpacity, flat, full && cheekEnabled);
+  const glowIntensity = theme?.glowIntensity ?? 0.10;
+  svg += buildDefs(id, skin, derived.skinHi, derived.skinLo, hairCol, bgCol, cheekColor, cheekOpacity, flat, full && cheekEnabled, glowIntensity);
 
   // Blink animation
   const blinkEnabled = !!enableBlink;

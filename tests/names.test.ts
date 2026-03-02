@@ -9,6 +9,7 @@ import {
   SOLNAMES_VERSION,
   BLOCKED_COMBOS,
 } from "../src/names";
+import type { DeriveOptions } from "../src/names";
 import { sha256, sha256Hex } from "../src/names/sha256";
 
 // ─── SHA-256 ────────────────────────────────────────────────────
@@ -236,5 +237,70 @@ describe("isValidSolName / parseSolName", () => {
   it("returns null for invalid names", () => {
     expect(parseSolName("notaname")).toBeNull();
     expect(parseSolName("")).toBeNull();
+  });
+});
+
+// ─── DeriveOptions — Custom Word Lists ─────────────────────────
+
+describe("DeriveOptions — custom word lists", () => {
+  const customOpts: DeriveOptions = {
+    adjectives: ["Alpha", "Bravo", "Charlie", "Delta", "Echo"],
+    nouns: ["Tiger", "Eagle", "Bear", "Wolf", "Hawk"],
+  };
+
+  it("uses custom adjectives", () => {
+    const id = deriveIdentity(WALLET, customOpts);
+    expect(customOpts.adjectives).toContain(id.adjective);
+  });
+
+  it("uses custom nouns", () => {
+    const id = deriveIdentity(WALLET, customOpts);
+    expect(customOpts.nouns).toContain(id.noun);
+  });
+
+  it("produces different names than defaults", () => {
+    const defaultName = deriveName(WALLET);
+    const customName = deriveName(WALLET, "display", customOpts);
+    expect(customName).not.toBe(defaultName);
+  });
+
+  it("is deterministic with custom lists", () => {
+    const a = deriveName(WALLET, "display", customOpts);
+    const b = deriveName(WALLET, "display", customOpts);
+    expect(a).toBe(b);
+  });
+
+  it("custom domain changes output", () => {
+    const defaultId = deriveIdentity(WALLET);
+    const customId = deriveIdentity(WALLET, { domain: "custom-v1" });
+    expect(customId.hash).not.toBe(defaultId.hash);
+  });
+
+  it("custom blocked combos are enforced", () => {
+    // Get the default name and block it
+    const defaultId = deriveIdentity(WALLET);
+    const blockedName = defaultId.adjective + defaultId.noun;
+    const opts: DeriveOptions = {
+      blockedCombos: new Set([blockedName]),
+    };
+    const newId = deriveIdentity(WALLET, opts);
+    expect(newId.adjective + newId.noun).not.toBe(blockedName);
+  });
+
+  it("no options = same as default", () => {
+    const withoutOpts = deriveName(WALLET);
+    const withEmptyOpts = deriveName(WALLET, "display", {});
+    expect(withEmptyOpts).toBe(withoutOpts);
+  });
+
+  it("all formats work with custom options", () => {
+    const short = deriveName(WALLET, "short", customOpts);
+    const display = deriveName(WALLET, "display", customOpts);
+    const tag = deriveName(WALLET, "tag", customOpts);
+    const full = deriveName(WALLET, "full", customOpts);
+    expect(short).toBeTruthy();
+    expect(display).toBeTruthy();
+    expect(tag).toContain("#");
+    expect(full).toContain("-");
   });
 });

@@ -4,6 +4,20 @@ All notable changes to SolFaces will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.1.1] — 2026-03-01
+
+### Added
+
+- **`DeriveOptions`** — `deriveName()` and `deriveIdentity()` now accept an optional options parameter for custom word lists, domain prefix, and blocked combinations. Fully backward-compatible.
+- **`glowIntensity` theme field** — Face glow opacity is now customizable via `SolFaceTheme.glowIntensity` (0-1, default 0.10).
+
+### Fixed
+
+- **SKILL.md git casing** — Fixed `skill.md` → `SKILL.md` for case-sensitive filesystems (Linux/CI).
+- **Theme image location** — Moved `solfaces-themes-labeled.png` to `assets/` to keep repo root clean.
+- **SKILL.md documentation** — Added return types, auto-populate notes, Python example, full wallet address in examples.
+- **reference/integrations.md** — Added `RenderOptions` interface documentation and server-side `colorOverrides` example.
+
 ## [2.1.0] — 2026-03-01
 
 ### Added
