@@ -22,16 +22,16 @@ export function isValidSolName(name: string): boolean {
 
 /**
  * Parse a SolName string into its component parts.
- * Supports display ("SunnyIcon"), tag ("SunnyIcon#2f95"),
- * and full ("SunnyIcon-InfiniteOre") formats.
+ * Supports display ("Sunny Icon"), tag ("Sunny Icon#2f95"),
+ * and full ("Sunny Icon-Infinite Ore") formats.
  *
  * Returns null if the name doesn't match any valid format.
  */
 export function parseSolName(
   name: string,
 ): ParsedSolName | null {
-  // Tag format: AdjNoun#xxxx
-  const tagMatch = name.match(/^([A-Z][a-z]+)([A-Z][a-z]+)#([0-9a-f]{4})$/);
+  // Tag format: Adj Noun#xxxx
+  const tagMatch = name.match(/^([A-Z][a-z]+) ([A-Z][a-z]+)#([0-9a-f]{4})$/);
   if (tagMatch) {
     const [, adj, noun, disc] = tagMatch;
     if (adjSet.has(adj) && nounSet.has(noun)) {
@@ -40,9 +40,9 @@ export function parseSolName(
     return null;
   }
 
-  // Full format: AdjNoun-AdjNoun
+  // Full format: Adj Noun-Adj Noun
   const fullMatch = name.match(
-    /^([A-Z][a-z]+)([A-Z][a-z]+)-([A-Z][a-z]+)([A-Z][a-z]+)$/,
+    /^([A-Z][a-z]+) ([A-Z][a-z]+)-([A-Z][a-z]+) ([A-Z][a-z]+)$/,
   );
   if (fullMatch) {
     const [, adj1, noun1] = fullMatch;
@@ -52,8 +52,8 @@ export function parseSolName(
     return null;
   }
 
-  // Display format: AdjNoun
-  const displayMatch = name.match(/^([A-Z][a-z]+)([A-Z][a-z]+)$/);
+  // Display format: Adj Noun
+  const displayMatch = name.match(/^([A-Z][a-z]+) ([A-Z][a-z]+)$/);
   if (displayMatch) {
     const [, adj, noun] = displayMatch;
     if (adjSet.has(adj) && nounSet.has(noun)) {

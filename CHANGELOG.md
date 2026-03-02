@@ -4,6 +4,16 @@ All notable changes to SolFaces will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.2.0] — 2026-03-01
+
+### Changed
+
+- **Space-separated SolNames** — Names now use spaces between adjective and noun for natural readability: `"Sunny Icon"` instead of `"SunnyIcon"`. Same words, same wallets — only the formatting changed.
+
+### Added
+
+- **`separator` option in `DeriveOptions`** — Customize the separator between adjective and noun. Default is `" "` (space). Use `""` for legacy PascalCase concatenation, `"-"` for hyphenated, or any custom string.
+
 ## [2.1.2] — 2026-03-01
 
 ### Improved
@@ -30,7 +40,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ### Added
 
-- **SolNames — deterministic name derivation** — Every wallet gets a human-friendly name derived via SHA-256 hashing and curated word lists. 1000 adjectives + 1000 nouns produce names like "SunnyIcon". Four formats: short ("Sunny"), display ("SunnyIcon", ~1M unique), tag ("SunnyIcon#2f95", ~65.5B unique), full ("SunnyIcon-InfiniteOre", ~1T unique). Same wallet = same name, forever.
+- **SolNames — deterministic name derivation** — Every wallet gets a human-friendly name derived via SHA-256 hashing and curated word lists. 1000 adjectives + 1000 nouns produce names like "Sunny Icon". Four formats: short ("Sunny"), display ("Sunny Icon", ~1M unique), tag ("Sunny Icon#2f95", ~65.5B unique), full ("Sunny Icon-Infinite Ore", ~1T unique). Same wallet = same name, forever.
 - **`deriveName(wallet, format?)`** — Core name derivation function. Exported from `solfaces` and `solfaces/names`.
 - **`deriveIdentity(wallet)`** — Returns full identity bundle: short, name, tag, full, adjective, noun, hash, discriminator.
 - **`isValidSolName()` / `parseSolName()`** — Name validation and parsing utilities.

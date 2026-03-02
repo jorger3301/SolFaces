@@ -130,8 +130,8 @@ const svg = renderSolFaceSVG("7xKXtg...", { size: 256 });
 ### Name derivation
 ```ts
 import { deriveName, deriveIdentity } from "solfaces";
-deriveName("7xKXtg...");           // "SunnyIcon"
-deriveName("7xKXtg...", "tag");    // "SunnyIcon#2f95"
+deriveName("7xKXtg...");           // "Sunny Icon"
+deriveName("7xKXtg...", "tag");    // "Sunny Icon#2f95"
 const id = deriveIdentity("7xKXtg...");  // full identity object
 ```
 

@@ -86,19 +86,19 @@ describe("deriveName — format shapes", () => {
     expect(name).toMatch(/^[A-Z][a-z]+$/);
   });
 
-  it("display returns two PascalCase words concatenated", () => {
+  it("display returns two PascalCase words space-separated", () => {
     const name = deriveName(WALLET, "display");
-    expect(name).toMatch(/^[A-Z][a-z]+[A-Z][a-z]+$/);
+    expect(name).toMatch(/^[A-Z][a-z]+ [A-Z][a-z]+$/);
   });
 
   it("tag returns display + #4hex", () => {
     const name = deriveName(WALLET, "tag");
-    expect(name).toMatch(/^[A-Z][a-z]+[A-Z][a-z]+#[0-9a-f]{4}$/);
+    expect(name).toMatch(/^[A-Z][a-z]+ [A-Z][a-z]+#[0-9a-f]{4}$/);
   });
 
-  it("full returns AdjNoun-AdjNoun", () => {
+  it("full returns Adj Noun-Adj Noun", () => {
     const name = deriveName(WALLET, "full");
-    expect(name).toMatch(/^[A-Z][a-z]+[A-Z][a-z]+-[A-Z][a-z]+[A-Z][a-z]+$/);
+    expect(name).toMatch(/^[A-Z][a-z]+ [A-Z][a-z]+-[A-Z][a-z]+ [A-Z][a-z]+$/);
   });
 
   it("defaults to display format", () => {
@@ -110,12 +110,12 @@ describe("deriveName — format shapes", () => {
 
 describe("deriveName — frozen test vectors", () => {
   const vectors: [string, string][] = [
-    ["7JfkjvMnwTvZNGNam2RgJ1BBxMpsqaQRaWmvejig7uCa", "FierceSortie"],
-    ["7PjJ2AHq9BMXWYjt3qqeKwZVLXHYFPmHRYrMF6PpRySD", "WavingMistral"],
-    ["DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263", "FortifiedAlluvium"],
-    ["So11111111111111111111111111111111111111112", "JettingSagittarius"],
-    ["EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", "CometEscarpment"],
-    ["JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN", "SeasoningPeat"],
+    ["7JfkjvMnwTvZNGNam2RgJ1BBxMpsqaQRaWmvejig7uCa", "Fierce Sortie"],
+    ["7PjJ2AHq9BMXWYjt3qqeKwZVLXHYFPmHRYrMF6PpRySD", "Waving Mistral"],
+    ["DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263", "Fortified Alluvium"],
+    ["So11111111111111111111111111111111111111112", "Jetting Sagittarius"],
+    ["EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", "Comet Escarpment"],
+    ["JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN", "Seasoning Peat"],
   ];
 
   for (const [wallet, expected] of vectors) {
@@ -176,14 +176,14 @@ describe("deriveIdentity", () => {
     expect(NOUNS).toContain(deriveIdentity(WALLET).noun);
   });
 
-  it("name = adjective + noun", () => {
+  it("name = adjective + space + noun", () => {
     const id = deriveIdentity(WALLET);
-    expect(id.name).toBe(id.adjective + id.noun);
+    expect(id.name).toBe(id.adjective + " " + id.noun);
   });
 
   it("tag = name + # + discriminator", () => {
     const id = deriveIdentity(WALLET);
-    expect(id.tag).toBe(id.name + "#" + id.discriminator);
+    expect(id.tag).toBe(id.adjective + " " + id.noun + "#" + id.discriminator);
   });
 
   it("short = adjective", () => {
@@ -302,5 +302,18 @@ describe("DeriveOptions — custom word lists", () => {
     expect(display).toBeTruthy();
     expect(tag).toContain("#");
     expect(full).toContain("-");
+  });
+
+  it("empty separator produces PascalCase concatenation", () => {
+    const name = deriveName(WALLET, "display", { separator: "" });
+    expect(name).toMatch(/^[A-Z][a-z]+[A-Z][a-z]+$/);
+  });
+
+  it("custom separator is used in all formats", () => {
+    const opts: DeriveOptions = { separator: "-" };
+    const display = deriveName(WALLET, "display", opts);
+    expect(display).toMatch(/^[A-Z][a-z]+-[A-Z][a-z]+$/);
+    const tag = deriveName(WALLET, "tag", opts);
+    expect(tag).toMatch(/^[A-Z][a-z]+-[A-Z][a-z]+#[0-9a-f]{4}$/);
   });
 });

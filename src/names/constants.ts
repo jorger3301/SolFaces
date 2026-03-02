@@ -2,7 +2,7 @@
 // SolNames v1 — Word Lists & Constants
 // 1000 adjectives × 1000 nouns = 1,000,000 display name combos.
 // All words are positive or neutral. No negative, offensive, or
-// embarrassing terms. PascalCase for concatenation readability.
+// embarrassing terms. PascalCase words, space-separated in output.
 // ═══════════════════════════════════════════════════════════════
 
 export const SOLNAMES_VERSION = "v1" as const;
@@ -285,6 +285,6 @@ export const NOUNS: readonly string[] = Object.freeze([
 export const BLOCKED_COMBOS: ReadonlySet<string> = Object.freeze(
   new Set<string>([
     // Add any discovered offensive adj+noun combinations here.
-    // Format: "AdjectiveNoun" (PascalCase, concatenated)
+    // Format: "Adjective Noun" (space-separated)
   ]),
 );

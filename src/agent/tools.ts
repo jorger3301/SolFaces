@@ -218,7 +218,7 @@ const listSolfaceThemes: SolFaceTool = {
 const deriveSolname: SolFaceTool = {
   name: "derive_solname",
   description:
-    "Derive a deterministic name from a Solana wallet address using SHA-256 hashing. Returns human-friendly names like 'SunnyIcon'. Same wallet always produces the same name. ~1M display name combinations, ~65.5B unique tag combinations.",
+    "Derive a deterministic name from a Solana wallet address using SHA-256 hashing. Returns human-friendly names like 'Sunny Icon'. Same wallet always produces the same name. ~1M display name combinations, ~65.5B unique tag combinations.",
   parameters: {
     type: "object",
     properties: {
@@ -229,7 +229,7 @@ const deriveSolname: SolFaceTool = {
       format: {
         type: "string",
         description:
-          "Name format: 'short' (adjective only), 'display' (adj+noun, default), 'tag' (adj+noun+#hex, unique), 'full' (adj+noun-adj+noun). Omit for full identity bundle.",
+          "Name format: 'short' (adjective only), 'display' (adj noun, default), 'tag' (adj noun#hex, unique), 'full' (adj noun-adj noun). Omit for full identity bundle.",
         enum: ["short", "display", "tag", "full"],
       },
     },

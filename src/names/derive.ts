@@ -29,6 +29,8 @@ export interface DeriveOptions {
   blockedCombos?: Set<string>;
   /** Custom domain prefix for SHA-256 hashing (default: "solnames-v1") */
   domain?: string;
+  /** Separator between adjective and noun (default: " ") */
+  separator?: string;
 }
 
 /**
@@ -93,11 +95,13 @@ export function deriveIdentity(
   // Discriminator from bytes 8-9 (4 hex chars)
   const discriminator = hex.slice(16, 20);
 
+  const sep = options?.separator ?? " ";
+
   return {
     short: adj1,
-    name: adj1 + noun1,
-    tag: adj1 + noun1 + "#" + discriminator,
-    full: adj1 + noun1 + "-" + adj2 + noun2,
+    name: adj1 + sep + noun1,
+    tag: adj1 + sep + noun1 + "#" + discriminator,
+    full: adj1 + sep + noun1 + "-" + adj2 + sep + noun2,
     adjective: adj1,
     noun: noun1,
     hash: hex,

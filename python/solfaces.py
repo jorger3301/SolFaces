@@ -1004,11 +1004,13 @@ def derive_identity(wallet: str) -> dict:
     # Discriminator from bytes 8-9
     discriminator = hex_str[16:20]
 
+    sep = " "
+
     return {
         "short": adj1,
-        "name": adj1 + noun1,
-        "tag": adj1 + noun1 + "#" + discriminator,
-        "full": adj1 + noun1 + "-" + adj2 + noun2,
+        "name": adj1 + sep + noun1,
+        "tag": adj1 + sep + noun1 + "#" + discriminator,
+        "full": adj1 + sep + noun1 + "-" + adj2 + sep + noun2,
         "adjective": adj1,
         "noun": noun1,
         "hash": hex_str,

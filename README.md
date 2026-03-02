@@ -24,7 +24,7 @@ Built for dApps, AI agents, social features, leaderboards, and anywhere a wallet
 - **Deterministic** — Same wallet address always produces a unique avatar and name. No database needed.
 - **Zero dependencies** — Core engine has no runtime dependencies.
 - **~2.56B unique faces** — 11 traits with expanded ranges = massive combination space.
-- **SolNames** — Every wallet gets a deterministic, human-friendly name derived via SHA-256 (e.g. "SunnyIcon"). ~1M display names, ~65.5B unique tags.
+- **SolNames** — Every wallet gets a deterministic, human-friendly name derived via SHA-256 (e.g. "Sunny Icon"). ~1M display names, ~65.5B unique tags.
 - **11 built-in themes** — Default, Dark, Light, Mono, Flat, Transparent, plus 3 Pixel and 2 Glass themes (React).
 - **Gradient-rich rendering** — Skin-luminance-driven colors, specular highlights, cheek blush, gradient hair, glow overlays.
 - **Works everywhere** — React, vanilla JS, Node, Python, CDN script tag, edge functions.
@@ -123,13 +123,13 @@ mountSolFace("#avatar", "7xKXqR...", { size: 48 });
 import { deriveName, deriveIdentity } from "solfaces";
 
 deriveName("7xKXqR...");
-// → "SunnyIcon" (deterministic, SHA-256 derived)
+// → "Sunny Icon" (deterministic, SHA-256 derived)
 
 deriveName("7xKXqR...", "tag");
-// → "SunnyIcon#2f95" (unique identifier)
+// → "Sunny Icon#2f95" (unique identifier)
 
 deriveName("7xKXqR...", "full");
-// → "SunnyIcon-InfiniteOre" (formal contexts)
+// → "Sunny Icon-Infinite Ore" (formal contexts)
 
 const id = deriveIdentity("7xKXqR...");
 // → { short, name, tag, full, adjective, noun, hash, discriminator }
@@ -170,8 +170,8 @@ SHA-256("solnames-v1:" + wallet) → 32 bytes
         ├─→ Bytes 0-3: seed PRNG → adjective + noun
         └─→ Bytes 8-9: hex discriminator → "2f95"
 
-Display:  WavingMistral
-Tag:      WavingMistral#2f95
+Display:  Waving Mistral
+Tag:      Waving Mistral#2f95
 ```
 
 ### Name Formats
@@ -179,9 +179,9 @@ Tag:      WavingMistral#2f95
 | Format  | Example                      | Unique Names | Use Case                    |
 |---------|------------------------------|-------------|-----------------------------|
 | short   | "Waving"                     | 1,000       | Tight UIs, badges           |
-| display | "WavingMistral"              | ~1,000,000  | Default — profiles, feeds   |
-| tag     | "WavingMistral#2f95"         | ~65.5B      | Unique identifier           |
-| full    | "WavingMistral-InfiniteOre"  | ~1T         | Formal contexts             |
+| display | "Waving Mistral"             | ~1,000,000  | Default — profiles, feeds   |
+| tag     | "Waving Mistral#2f95"        | ~65.5B      | Unique identifier           |
+| full    | "Waving Mistral-Infinite Ore" | ~1T        | Formal contexts             |
 
 ### Usage
 
@@ -189,10 +189,10 @@ Tag:      WavingMistral#2f95
 import { deriveName, deriveIdentity } from "solfaces";
 // or: import { deriveName } from "solfaces/names";
 
-deriveName("7xKXqR...");           // → "SunnyIcon" (display format)
+deriveName("7xKXqR...");           // → "Sunny Icon" (display format)
 deriveName("7xKXqR...", "short");  // → "Sunny"
-deriveName("7xKXqR...", "tag");    // → "SunnyIcon#2f95"
-deriveName("7xKXqR...", "full");   // → "SunnyIcon-InfiniteOre"
+deriveName("7xKXqR...", "tag");    // → "Sunny Icon#2f95"
+deriveName("7xKXqR...", "full");   // → "Sunny Icon-Infinite Ore"
 
 const id = deriveIdentity("7xKXqR...");
 // → { short, name, tag, full, adjective, noun, hash, discriminator }
@@ -224,9 +224,9 @@ import { SolFace } from "solfaces/react";
 ```ts
 import { isValidSolName, parseSolName } from "solfaces/names";
 
-isValidSolName("SunnyIcon");         // true
-isValidSolName("SunnyIcon#2f95");    // true
-parseSolName("SunnyIcon#2f95");
+isValidSolName("Sunny Icon");         // true
+isValidSolName("Sunny Icon#2f95");    // true
+parseSolName("Sunny Icon#2f95");
 // → { adjective: "Sunny", noun: "Icon", discriminator: "2f95" }
 ```
 
