@@ -5,7 +5,7 @@ description: Generates deterministic avatars and names for Solana wallet address
 
 # SolFaces
 
-Deterministic avatar and name generator for Solana wallets. Every wallet address produces a unique, consistent face and name. ~2.56B unique faces, ~1M display names (~65.5B unique tags). Zero dependencies, sub-millisecond, works everywhere.
+Deterministic avatar and name generator for Solana wallets. Every wallet address produces a unique, consistent face and name. ~53M unique avatars, ~1M display names (~65.5B unique tags). Zero dependencies, sub-millisecond, works everywhere.
 
 ---
 
@@ -177,9 +177,8 @@ For comprehensive documentation on specific topics:
 ## Key Facts
 
 - **Deterministic**: Same wallet = same face + same name. djb2 + mulberry32 PRNG (traits), SHA-256 + mulberry32 PRNG (names).
-- **11 traits**: Face shape (4), skin (10), eye style (8), eye color (5), eyebrows (5), nose (4), mouth (8), hair style (10), hair color (10), accessory (10), background (10) = ~2.56B unique faces.
+- **10 visual traits**: Skin (10), eye style (9), eye color (8), eyebrows (8), nose (8), mouth (8), hair style (10), hair color (10), accessory (12), background (12) = ~53M unique avatars. Hair style and color are sampled for PRNG ordering but all render as bald. (faceShape field exists for PRNG ordering but all faces render as squircle.)
 - **SolNames**: 1000 adjectives + 1000 nouns, SHA-256 derived. Formats: short, display (~1M), tag (~65.5B), full (~1T). Custom word lists supported via `DeriveOptions`.
-- **Earring suppression**: Long and bob hairstyles suppress earring accessories.
 - **Cross-language parity**: JS and Python produce identical output.
 - **Zero dependencies**: Core engine has no runtime deps.
 - **SVG viewBox**: All avatars use 64x64 viewBox, scaled by `size`.

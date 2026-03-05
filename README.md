@@ -23,7 +23,7 @@ Built for dApps, AI agents, social features, leaderboards, and anywhere a wallet
 
 - **Deterministic** — Same wallet address always produces a unique avatar and name. No database needed.
 - **Zero dependencies** — Core engine has no runtime dependencies.
-- **~2.56B unique faces** — 11 traits with expanded ranges = massive combination space.
+- **~53M unique avatars** — 10 visual traits deterministically sampled = massive combination space.
 - **SolNames** — Every wallet gets a deterministic, human-friendly name derived via SHA-256 (e.g. "Sunny Icon"). ~1M display names, ~65.5B unique tags.
 - **11 built-in themes** — Default, Dark, Light, Mono, Flat, Transparent, plus 3 Pixel and 2 Glass themes (React).
 - **Gradient-rich rendering** — Skin-luminance-driven colors, specular highlights, cheek blush, gradient hair, glow overlays.
@@ -339,7 +339,7 @@ import { glassTheme, glassDarkTheme } from "solfaces/themes";
 
 Any Solana trading bot or autonomous agent just needs its wallet address and it instantly gets:
 
-- **A face** — unique, deterministic SVG avatar (2.56B combinations)
+- **A face** — unique, deterministic SVG avatar (~53M unique combinations)
 - **A name** — `"Fierce Sortie"`, `"Waving Mistral"`, etc. — like a real first/last name
 - **Self-awareness** — a first-person description it can use in its system prompt to know what it looks like and introduce itself
 
@@ -353,8 +353,8 @@ import { agentAppearancePrompt } from "solfaces";
 const appearance = agentAppearancePrompt("7xKXqR...", "Atlas");
 // → "My visual identity is a SolFace avatar (ID: a3f2b1c0) derived from
 //    my wallet address. I'm Atlas. I have a squircle face with warm golden skin,
-//    almond-shaped hazel eyes with gently curved eyebrows, and flowing
-//    auburn wavy hair. I'm wearing aviator sunglasses. I have a playful grin.
+//    almond-shaped hazel eyes, natural eyebrows, and am bald.
+//    I'm wearing aviator sunglasses. I have a playful grin.
 //    This appearance is deterministic — anyone who looks up my wallet will
 //    see the same face."
 
@@ -761,7 +761,7 @@ For sites without a build step — Webflow, Notion embeds, plain HTML, WordPress
 | `traitHash(wallet)` | `string` | 8-char hex hash |
 | `resolveTheme(name?, themes?)` | `SolFaceTheme \| undefined` | Look up theme by name from a map |
 | `mergeTheme(base, overrides)` | `SolFaceTheme` | Merge two themes |
-| `effectiveAccessory(traits)` | `number` | Accessory index (earring suppressed for long/bob hair) |
+| `effectiveAccessory(traits)` | `number` | Resolved accessory index (0–11) |
 | `renderSolFaceSVG(wallet, options?)` | `string` | Raw SVG markup |
 | `renderSolFaceDataURI(wallet, options?)` | `string` | Data URI for `<img>` tags |
 | `renderSolFaceBase64(wallet, options?)` | `string` | Base64 data URI |
@@ -868,19 +868,20 @@ Available keys: `skin`, `eyes`, `hair`, `bg`, `mouth`, `eyebrow`, `accessory`, `
 
 | Trait | Variants | Options |
 |-------|----------|---------|
-| Face Shape | 4 | Squircle (all — preserved for PRNG ordering) |
 | Skin Color | 10 | Porcelain, Ivory, Fair, Light, Sand, Golden, Warm, Caramel, Brown, Deep |
-| Eye Style | 8 | Round, Minimal, Almond, Wide, Relaxed, Joyful, Bright, Gentle |
-| Eye Color | 5 | Chocolate, Sky, Emerald, Hazel, Storm |
-| Eyebrows | 5 | Wispy, Straight, Natural, Arched, Angled |
-| Nose | 4 | Shadow, Button, Soft, Nostrils |
+| Eye Style | 9 | Round, Minimal, Almond, Wide, Relaxed, Joyful, Bright, Gentle, Side-look |
+| Eye Color | 8 | Chocolate, Sky, Emerald, Hazel, Storm, Amber, Violet, Gray |
+| Eyebrows | 8 | Wispy, Straight, Natural, Arched, Angled, Worried, Bushy, Thin |
+| Nose | 8 | Shadow, Button, Soft, Nostrils, Pointed, Wide, Bridge, Snub |
 | Mouth | 8 | Smile, Calm, Happy, Oh, Smirk, Grin, Flat, Pout |
-| Hair Style | 10 | Bald, Short, Curly, Side Sweep, Puff, Long, Bob, Buzz, Wavy, Topknot |
-| Hair Color | 10 | Black, Espresso, Walnut, Honey, Copper, Silver, Charcoal, Burgundy, Strawberry, Ginger |
-| Accessory | 10 | None, Beauty Mark, Round Glasses, Rect Glasses, Earring, Headband, Freckles, Stud Earrings, Aviators, Band-Aid |
-| Background | 10 | Rose, Olive, Sage, Fern, Mint, Ocean, Sky, Lavender, Orchid, Blush |
+| Hair Style | 10 | Sampled for PRNG ordering; all render as bald |
+| Hair Color | 10 | Sampled for PRNG ordering; used for headband color derivation |
+| Accessory | 12 | None, Beauty Mark, Round Glasses, Rect Glasses, Earring, Headband, Freckles, Stud Earrings, Aviators, Band-Aid, Left Eyebrow Slit, Right Eyebrow Slit |
+| Background | 12 | Rose, Olive, Sage, Fern, Mint, Ocean, Sky, Lavender, Orchid, Blush, Lilac, Seafoam |
 
-**Total unique combinations: ~2,560,000,000**
+**Unique visual combinations: ~53,084,160**
+
+> 10 skin × 9 eyes × 8 eye colors × 8 brows × 8 noses × 8 mouths × 12 accessories × 12 backgrounds ≈ 53M. Hair style and hair color are sampled for PRNG determinism but don't produce visible output (all render bald).
 
 Algorithm: **djb2 hash** → **mulberry32 PRNG** → sequential trait sampling. Sub-millisecond. Deterministic across JS and Python.
 
@@ -933,7 +934,7 @@ solfaces/
 ### Key Design Decisions
 
 - **`colors.ts` is the single source of truth** for all color math. Both `renderer.ts` and `SolFace.tsx` import from it, preventing renderer drift.
-- **`effectiveAccessory()`** handles earring suppression: long and bob hairstyles suppress earring accessories.
+- **`effectiveAccessory()`** resolves the final accessory index (0–11) from the trait set.
 - **`_` prefix** on theme fields marks React-only features (pixel, glass). The string renderer ignores these.
 - **Detail levels** are resolved at render time: `"auto"` → full if size >= 48, simplified otherwise.
 
@@ -943,7 +944,7 @@ solfaces/
 
 v2.0.0 is a breaking release:
 
-- **All faces change.** Trait ranges expanded (skin 6→10, mouth 6→8, hair 8→10, accessories 6→10, bg 5→10), so every wallet generates a different face than in v1.
+- **All faces change.** Trait ranges expanded (skin 6→10, mouth 6→8, hair 10, accessories 6→12, bg 5→12, eyes 8→9), so every wallet generates a different face than in v1. Hair is sampled but no longer rendered (all faces are bald).
 - **Old themes removed.** `solana`, `neon`, `jupiter`, `phantom`, `circle` themes are gone. Use `dark`, `light`, `mono`, `flat`, `transparent`, or the new `glass`/`pixel` themes.
 - **New rendering engine.** Gradient-rich rendering with skin-luminance-driven colors, ears, hair-back layers, and face overlays.
 - **New theme fields.** `flat`, `cheekEnabled`, `shadowEnabled`, `glowIntensity`, and React-only `_glass*`/`_pixel*` fields.

@@ -26,15 +26,15 @@ import struct
 class SolFaceTraits:
     face_shape: int   # 0-3 (consumed for PRNG ordering, all render as squircle)
     skin_color: int   # 0-9
-    eye_style: int    # 0-7
-    eye_color: int    # 0-4
-    eyebrows: int     # 0-4
-    nose: int         # 0-3
+    eye_style: int    # 0-8
+    eye_color: int    # 0-7
+    eyebrows: int     # 0-7
+    nose: int         # 0-7
     mouth: int        # 0-7
     hair_style: int   # 0-9
     hair_color: int   # 0-9
-    accessory: int    # 0-9
-    bg_color: int     # 0-9
+    accessory: int    # 0-11
+    bg_color: int     # 0-11
 
     def to_dict(self) -> Dict[str, int]:
         return {
@@ -58,7 +58,10 @@ SKIN_COLORS = [
     "#faeae5", "#efd6c8", "#e4c5aa", "#d5b590", "#c59e77",
     "#b4875f", "#9d6d4d", "#805742", "#654134", "#4b2d25",
 ]
-EYE_COLORS = ["#382414", "#3868A8", "#38784C", "#808838", "#586878"]
+EYE_COLORS = [
+    "#382414", "#3868A8", "#38784C", "#808838", "#586878",
+    "#A06830", "#685898", "#889898",
+]
 HAIR_COLORS = [
     "#1A1A24", "#4C3428", "#887058", "#D4B868", "#A84830",
     "#C0C0CC", "#484858", "#783850", "#D8B0A0", "#C08048",
@@ -66,6 +69,7 @@ HAIR_COLORS = [
 BG_COLORS = [
     "#b98387", "#a9a360", "#9eb785", "#69ab79", "#81bbb0",
     "#6499af", "#7f8bbd", "#8869ab", "#b785b3", "#ab6984",
+    "#a07ab5", "#74b5a0",
 ]
 
 
@@ -105,6 +109,24 @@ def luminance(h: str) -> float:
     return (r + g + b) / 3
 
 
+def _relative_luminance(h: str) -> float:
+    """WCAG 2.0 relative luminance."""
+    r, g, b = hex_to_rgb(h)
+    def _lin(c: float) -> float:
+        s = c / 255
+        return s / 12.92 if s <= 0.03928 else ((s + 0.055) / 1.055) ** 2.4
+    return 0.2126 * _lin(r) + 0.7152 * _lin(g) + 0.0722 * _lin(b)
+
+
+def contrast_ratio(hex1: str, hex2: str) -> float:
+    """WCAG 2.0 contrast ratio between two hex colors (1-21)."""
+    l1 = _relative_luminance(hex1)
+    l2 = _relative_luminance(hex2)
+    lighter = max(l1, l2)
+    darker = min(l1, l2)
+    return (lighter + 0.05) / (darker + 0.05)
+
+
 def derive_skin_colors(skin: str) -> dict:
     sL = luminance(skin)
     is_dark = sL < 100
@@ -136,6 +158,11 @@ def derive_skin_colors(skin: str) -> dict:
     lr, lg, lb = hex_to_rgb(lip_raw)
     lip_d = abs(sr - lr) + abs(sg - lg) + abs(sb - lb)
     lip_color = blend(skin, lip_base, 0.78) if lip_d < 60 else lip_raw
+    # Ensure minimum lip/skin contrast for readability
+    attempts = 0
+    while contrast_ratio(lip_color, skin) < 1.8 and attempts < 12:
+        lip_color = darken(lip_color, 0.06)
+        attempts += 1
 
     brow_color = lighten(skin, 0.35 if sL < 80 else 0.25) if is_dark else darken(skin, 0.55)
     nose_fill = lighten(skin, 0.20) if is_dark else darken(skin, 0.20)
@@ -158,12 +185,6 @@ def derive_skin_colors(skin: str) -> dict:
         "ear_fill": ear_fill, "ear_shadow": ear_shadow,
         "eye_white": eye_white, "lid_color": lid_color, "acc_color": acc_color,
     }
-
-
-def buzz_opacity(hair_col: str, skin: str) -> float:
-    hr, hg, hb = hex_to_rgb(hair_col)
-    sr, sg, sb = hex_to_rgb(skin)
-    return 0.70 if abs(hr - sr) + abs(hg - sg) + abs(hb - sb) < 80 else 0.50
 
 
 # ─── Hashing (djb2) — exact JS parity ────────────────────────
@@ -215,23 +236,20 @@ def generate_traits(wallet_address: str) -> SolFaceTraits:
     return SolFaceTraits(
         face_shape=int(rand() * 4),
         skin_color=int(rand() * 10),
-        eye_style=int(rand() * 8),
-        eye_color=int(rand() * 5),
-        eyebrows=int(rand() * 5),
-        nose=int(rand() * 4),
+        eye_style=int(rand() * 9),
+        eye_color=int(rand() * 8),
+        eyebrows=int(rand() * 8),
+        nose=int(rand() * 8),
         mouth=int(rand() * 8),
         hair_style=int(rand() * 10),
         hair_color=int(rand() * 10),
-        accessory=int(rand() * 10),
-        bg_color=int(rand() * 10),
+        accessory=int(rand() * 12),
+        bg_color=int(rand() * 12),
     )
 
 
 def effective_accessory(t: SolFaceTraits) -> int:
-    ai = t.accessory % 10
-    hi = t.hair_style % 10
-    if (ai == 4 or ai == 7) and (hi == 5 or hi == 6):
-        return 0
+    ai = t.accessory % 12
     return ai
 
 
@@ -243,19 +261,21 @@ def trait_hash(wallet_address: str) -> str:
 
 SKIN_LABELS = ["Porcelain", "Ivory", "Fair", "Light", "Sand",
                "Golden", "Warm", "Caramel", "Brown", "Deep"]
-EYE_STYLE_LABELS = ["Round", "Minimal", "Almond", "Wide", "Relaxed", "Joyful", "Bright", "Gentle"]
-EYE_COLOR_LABELS = ["Chocolate", "Sky", "Emerald", "Hazel", "Storm"]
-BROW_LABELS = ["Wispy", "Straight", "Natural", "Arched", "Angled"]
-NOSE_LABELS = ["Shadow", "Button", "Soft", "Nostrils"]
+EYE_STYLE_LABELS = ["Round", "Minimal", "Almond", "Wide", "Relaxed", "Joyful", "Bright", "Gentle", "Side-look"]
+EYE_COLOR_LABELS = ["Chocolate", "Sky", "Emerald", "Hazel", "Storm", "Amber", "Violet", "Gray"]
+BROW_LABELS = ["Wispy", "Straight", "Natural", "Arched", "Angled", "Worried", "Bushy", "Thin"]
+NOSE_LABELS = ["Shadow", "Button", "Soft", "Nostrils", "Pointed", "Wide", "Bridge", "Snub"]
 MOUTH_LABELS = ["Smile", "Calm", "Happy", "Oh", "Smirk", "Grin", "Flat", "Pout"]
-HAIR_STYLE_LABELS = ["Bald", "Short", "Curly", "Side Sweep", "Puff",
-                     "Long", "Bob", "Buzz", "Wavy", "Topknot"]
+HAIR_STYLE_LABELS = ["Bald", "Crew", "Curly", "Side Part", "Long",
+                     "Buzz", "Beanie", "Cap", "Mohawk", "Bun"]
 HAIR_COLOR_LABELS = ["Black", "Espresso", "Walnut", "Honey", "Copper",
                      "Silver", "Charcoal", "Burgundy", "Strawberry", "Ginger"]
 ACC_LABELS = ["None", "Beauty Mark", "Round Glasses", "Rect Glasses", "Earring",
-              "Headband", "Freckles", "Stud Earrings", "Aviators", "Band-Aid"]
+              "Headband", "Freckles", "Stud Earrings", "Aviators", "Band-Aid",
+              "Left Eyebrow Slit", "Right Eyebrow Slit"]
 BG_COLOR_LABELS = ["Rose", "Olive", "Sage", "Fern", "Mint",
-                   "Ocean", "Sky", "Lavender", "Orchid", "Blush"]
+                   "Ocean", "Sky", "Lavender", "Orchid", "Blush",
+                   "Lilac", "Seafoam"]
 
 
 def get_trait_labels(t: SolFaceTraits) -> Dict[str, str]:
@@ -296,11 +316,8 @@ def _build_defs(gid: str, skin: str, skin_hi: str, skin_lo: str,
     d = "<defs>"
     d += f'<linearGradient id="{gid}sg" x1="0" y1="0" x2="0" y2="1">'
     d += f'<stop offset="0%" stop-color="{skin_hi}"/>'
+    d += f'<stop offset="50%" stop-color="{skin}"/>'
     d += f'<stop offset="100%" stop-color="{skin_lo}"/>'
-    d += "</linearGradient>"
-    d += f'<linearGradient id="{gid}hg" x1="0" y1="0" x2="0" y2="1">'
-    d += f'<stop offset="0%" stop-color="{lighten(hair_col, 0.15)}"/>'
-    d += f'<stop offset="100%" stop-color="{darken(hair_col, 0.15)}"/>'
     d += "</linearGradient>"
     d += f'<linearGradient id="{gid}bg" x1="0" y1="0" x2="1" y2="1">'
     d += f'<stop offset="0%" stop-color="{lighten(bg_col, 0.12)}"/>'
@@ -328,10 +345,6 @@ def _build_defs(gid: str, skin: str, skin_hi: str, skin_lo: str,
 
 
 def _render_hair_back(hi: int, gid: str, flat: bool) -> str:
-    fill = "currentColor" if flat else f"url(#{gid}hg)"
-    if hi == 5: return f'<rect x="10" y="14" width="44" height="42" rx="6" fill="{fill}"/>'
-    if hi == 6: return f'<rect x="12" y="14" width="40" height="32" rx="8" fill="{fill}"/>'
-    if hi == 8: return f'<rect x="11" y="14" width="42" height="38" rx="8" fill="{fill}"/>'
     return ""
 
 
@@ -360,33 +373,6 @@ def _render_face_overlays(gid: str) -> str:
 
 
 def _render_hair_front(hi: int, gid: str, hair_col: str, skin: str, flat: bool) -> str:
-    fill = hair_col if flat else f"url(#{gid}hg)"
-    if hi == 0: return ""
-    if hi == 1: return f'<path d="M14 28 Q14 14 32 12 Q50 14 50 28 L50 22 Q50 12 32 10 Q14 12 14 22 Z" fill="{fill}"/>'
-    if hi == 2:
-        return (f'<g fill="{fill}">'
-                '<circle cx="20" cy="14" r="5"/><circle cx="28" cy="11" r="5.5"/>'
-                '<circle cx="36" cy="11" r="5.5"/><circle cx="44" cy="14" r="5"/>'
-                '<circle cx="16" cy="20" r="4"/><circle cx="48" cy="20" r="4"/></g>')
-    if hi == 3:
-        return (f'<path d="M14 26 Q14 12 32 10 Q50 12 50 26 L50 20 Q50 10 32 8 Q14 10 14 20 Z" fill="{fill}"/>'
-                f'<path d="M14 20 Q8 16 10 8 Q14 10 20 16 Z" fill="{fill}"/>')
-    if hi == 4: return f'<ellipse cx="32" cy="10" rx="14" ry="8" fill="{fill}"/>'
-    if hi == 5: return f'<path d="M14 28 Q14 12 32 10 Q50 12 50 28 L50 20 Q50 10 32 8 Q14 10 14 20 Z" fill="{fill}"/>'
-    if hi == 6:
-        return (f'<path d="M14 28 Q14 12 32 10 Q50 12 50 28 L50 20 Q50 10 32 8 Q14 10 14 20 Z" fill="{fill}"/>'
-                f'<rect x="10" y="28" width="8" height="14" rx="4" fill="{fill}"/>'
-                f'<rect x="46" y="28" width="8" height="14" rx="4" fill="{fill}"/>')
-    if hi == 7:
-        bop = buzz_opacity(hair_col, skin)
-        return f'<rect x="15" y="13" width="34" height="16" rx="10" ry="8" fill="{hair_col}" opacity="{bop:.2f}"/>'
-    if hi == 8:
-        return (f'<path d="M14 28 Q14 12 32 10 Q50 12 50 28 L50 20 Q50 10 32 8 Q14 10 14 20 Z" fill="{fill}"/>'
-                f'<path d="M12 30 Q10 20 14 16" fill="none" stroke="{fill}" stroke-width="4" stroke-linecap="round"/>'
-                f'<path d="M52 30 Q54 20 50 16" fill="none" stroke="{fill}" stroke-width="4" stroke-linecap="round"/>')
-    if hi == 9:
-        return (f'<path d="M14 28 Q14 14 32 12 Q50 14 50 28 L50 22 Q50 12 32 10 Q14 12 14 22 Z" fill="{fill}"/>'
-                f'<ellipse cx="32" cy="6" rx="6" ry="5" fill="{fill}"/>')
     return ""
 
 
@@ -421,17 +407,16 @@ def _render_eyes(ei: int, eye_col: str, eye_white: str, lid_color: str, full: bo
     elif ei == 6:
         s += f'<circle cx="{lx}" cy="{y}" r="3.5" fill="{eye_white}"/><circle cx="{lx+0.5}" cy="{y}" r="2" fill="{eye_col}"/>'
         s += f'<circle cx="{lx+1.5}" cy="{y-1}" r="1" fill="white" opacity="0.9"/>'
-        if full:
-            s += f'<line x1="{lx+2.5}" y1="{y-3.5}" x2="{lx+4}" y2="{y-5}" stroke="{eye_col}" stroke-width="0.8" stroke-linecap="round"/>'
-            s += f'<line x1="{lx+3.5}" y1="{y-2.5}" x2="{lx+5}" y2="{y-3.5}" stroke="{eye_col}" stroke-width="0.8" stroke-linecap="round"/>'
         s += f'<circle cx="{rx}" cy="{y}" r="3.5" fill="{eye_white}"/><circle cx="{rx+0.5}" cy="{y}" r="2" fill="{eye_col}"/>'
         s += f'<circle cx="{rx+1.5}" cy="{y-1}" r="1" fill="white" opacity="0.9"/>'
-        if full:
-            s += f'<line x1="{rx+2.5}" y1="{y-3.5}" x2="{rx+4}" y2="{y-5}" stroke="{eye_col}" stroke-width="0.8" stroke-linecap="round"/>'
-            s += f'<line x1="{rx+3.5}" y1="{y-2.5}" x2="{rx+5}" y2="{y-3.5}" stroke="{eye_col}" stroke-width="0.8" stroke-linecap="round"/>'
     elif ei == 7:
         s += f'<ellipse cx="{lx}" cy="{y}" rx="4.5" ry="1.5" fill="{eye_white}"/><ellipse cx="{lx+0.5}" cy="{y}" rx="2.2" ry="1.2" fill="{eye_col}"/>'
         s += f'<ellipse cx="{rx}" cy="{y}" rx="4.5" ry="1.5" fill="{eye_white}"/><ellipse cx="{rx+0.5}" cy="{y}" rx="2.2" ry="1.2" fill="{eye_col}"/>'
+    elif ei == 8:  # Side-look — pupils shifted left
+        s += f'<circle cx="{lx}" cy="{y}" r="3.5" fill="{eye_white}"/><circle cx="{lx-1}" cy="{y}" r="2" fill="{eye_col}"/>'
+        if full: s += f'<circle cx="{lx-0.3}" cy="{y-0.8}" r="0.7" fill="white" opacity="0.8"/>'
+        s += f'<circle cx="{rx}" cy="{y}" r="3.5" fill="{eye_white}"/><circle cx="{rx-1}" cy="{y}" r="2" fill="{eye_col}"/>'
+        if full: s += f'<circle cx="{rx-0.3}" cy="{y-0.8}" r="0.7" fill="white" opacity="0.8"/>'
     else:
         s += f'<circle cx="{lx}" cy="{y}" r="3.5" fill="{eye_white}"/><circle cx="{lx+0.8}" cy="{y}" r="2" fill="{eye_col}"/>'
         s += f'<circle cx="{rx}" cy="{y}" r="3.5" fill="{eye_white}"/><circle cx="{rx+0.8}" cy="{y}" r="2" fill="{eye_col}"/>'
@@ -459,6 +444,15 @@ def _render_eyebrows(bi: int, brow_color: str) -> str:
     if bi == 4:
         return (f'<polyline points="{lx-3},{y+1} {lx},{y-2} {lx+3},{y}" fill="none" stroke="{brow_color}" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>'
                 f'<polyline points="{rx-3},{y} {rx},{y-2} {rx+3},{y+1}" fill="none" stroke="{brow_color}" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>')
+    if bi == 5:  # Worried
+        return (f'<line x1="{lx-3}" y1="{y-1}" x2="{lx+3}" y2="{y+1}" stroke="{brow_color}" stroke-width="1.1" stroke-linecap="round"/>'
+                f'<line x1="{rx-3}" y1="{y+1}" x2="{rx+3}" y2="{y-1}" stroke="{brow_color}" stroke-width="1.1" stroke-linecap="round"/>')
+    if bi == 6:  # Bushy
+        return (f'<path d="M{lx-4} {y+0.5} Q{lx} {y-2} {lx+4} {y+0.5}" fill="none" stroke="{brow_color}" stroke-width="2.0" stroke-linecap="round"/>'
+                f'<path d="M{rx-4} {y+0.5} Q{rx} {y-2} {rx+4} {y+0.5}" fill="none" stroke="{brow_color}" stroke-width="2.0" stroke-linecap="round"/>')
+    if bi == 7:  # Thin
+        return (f'<path d="M{lx-3.5} {y} Q{lx} {y-1.5} {lx+3.5} {y}" fill="none" stroke="{brow_color}" stroke-width="0.5" stroke-linecap="round"/>'
+                f'<path d="M{rx-3.5} {y} Q{rx} {y-1.5} {rx+3.5} {y}" fill="none" stroke="{brow_color}" stroke-width="0.5" stroke-linecap="round"/>')
     return ""
 
 
@@ -468,6 +462,11 @@ def _render_nose(ni: int, nose_fill: str) -> str:
     if ni == 1: return f'<circle cx="{cx}" cy="{y}" r="1.8" fill="{nose_fill}" opacity="0.5"/>'
     if ni == 2: return f'<path d="M{cx-2} {y+1} Q{cx} {y-2} {cx+2} {y+1}" fill="none" stroke="{nose_fill}" stroke-width="1" stroke-linecap="round" opacity="0.5"/>'
     if ni == 3: return f'<circle cx="{cx-1.8}" cy="{y}" r="1.2" fill="{nose_fill}" opacity="0.4"/><circle cx="{cx+1.8}" cy="{y}" r="1.2" fill="{nose_fill}" opacity="0.4"/>'
+    if ni == 4: return f'<path d="M{cx} {y-2} L{cx-2} {y+1.5} L{cx+2} {y+1.5} Z" fill="{nose_fill}" opacity="0.4"/>'
+    if ni == 5: return f'<ellipse cx="{cx}" cy="{y}" rx="3.5" ry="1.5" fill="{nose_fill}" opacity="0.35"/>'
+    if ni == 6: return f'<line x1="{cx}" y1="{y-3}" x2="{cx}" y2="{y+1}" stroke="{nose_fill}" stroke-width="1.2" stroke-linecap="round" opacity="0.4"/>'
+    if ni == 7: return (f'<circle cx="{cx}" cy="{y+0.5}" r="2" fill="{nose_fill}" opacity="0.35"/>'
+                        f'<ellipse cx="{cx}" cy="{y-0.5}" rx="1" ry="0.5" fill="{nose_fill}" opacity="0.15"/>')
     return f'<ellipse cx="{cx}" cy="{y}" rx="2" ry="1.2" fill="{nose_fill}" opacity="0.35"/>'
 
 
@@ -482,14 +481,14 @@ def _render_mouth(mi: int, lip_color: str, is_dark: bool) -> str:
     if mi == 5:
         return (f'<path d="M{cx-5} {y} Q{cx} {y+6} {cx+5} {y}" fill="{tc}" stroke="{lip_color}" stroke-width="1"/>'
                 f'<line x1="{cx-4}" y1="{y+1.5}" x2="{cx+4}" y2="{y+1.5}" stroke="{lip_color}" stroke-width="0.3" opacity="0.3"/>')
-    if mi == 6: return f'<line x1="{cx-4}" y1="{y+1}" x2="{cx+4}" y2="{y+1}" stroke="{lip_color}" stroke-width="1.5" stroke-linecap="round"/>'
+    if mi == 6: return f'<path d="M{cx-4} {y+0.5} Q{cx} {y+1.5} {cx+4} {y+0.5}" fill="none" stroke="{lip_color}" stroke-width="1.4" stroke-linecap="round"/>'
     if mi == 7:
         return (f'<ellipse cx="{cx}" cy="{y+1}" rx="3.5" ry="2" fill="{lip_color}" opacity="0.25"/>'
                 f'<path d="M{cx-3} {y} Q{cx} {y+2.5} {cx+3} {y}" fill="none" stroke="{lip_color}" stroke-width="1.2" stroke-linecap="round"/>')
     return f'<path d="M{cx-4} {y} Q{cx} {y+4} {cx+4} {y}" fill="none" stroke="{lip_color}" stroke-width="1.4" stroke-linecap="round"/>'
 
 
-def _render_accessory(ai: int, acc_color: str, glasses_color: str, earring_color: str, headband_color: str) -> str:
+def _render_accessory(ai: int, acc_color: str, glasses_color: str, earring_color: str, headband_color: str, skin_color: str = "#E8BA8B") -> str:
     if ai == 0: return ""
     if ai == 1: return '<circle cx="40" cy="44" r="0.8" fill="#3a2a2a"/>'
     if ai == 2:
@@ -527,10 +526,14 @@ def _render_accessory(ai: int, acc_color: str, glasses_color: str, earring_color
                 '<line x1="45" y1="31" x2="50" y2="29"/></g>')
     if ai == 9:
         return ('<g>'
-                '<rect x="38" y="38" width="8" height="4" rx="1" fill="#f0d0a0" transform="rotate(-15 42 40)"/>'
-                '<line x1="40" y1="39" x2="40" y2="41" stroke="#c0a080" stroke-width="0.4" transform="rotate(-15 42 40)"/>'
-                '<line x1="42" y1="39" x2="42" y2="41" stroke="#c0a080" stroke-width="0.4" transform="rotate(-15 42 40)"/>'
-                '<line x1="44" y1="39" x2="44" y2="41" stroke="#c0a080" stroke-width="0.4" transform="rotate(-15 42 40)"/></g>')
+                '<rect x="38" y="38" width="9" height="4.5" rx="1.2" fill="#f0d0a0" transform="rotate(-15 42 40)"/>'
+                '<rect x="39.5" y="38.5" width="6" height="3.5" rx="0.8" fill="#f5ddb5" transform="rotate(-15 42 40)"/>'
+                '<circle cx="42.5" cy="40.25" r="0.5" fill="#d4b898" transform="rotate(-15 42 40)"/>'
+                '</g>')
+    if ai == 10:  # Left Eyebrow Slit
+        return f'<line x1="23" y1="24.8" x2="23.8" y2="29.2" stroke="{skin_color}" stroke-width="1.3" stroke-linecap="butt"/>'
+    if ai == 11:  # Right Eyebrow Slit
+        return f'<line x1="41" y1="24.8" x2="40.2" y2="29.2" stroke="{skin_color}" stroke-width="1.3" stroke-linecap="butt"/>'
     return ""
 
 
@@ -571,15 +574,15 @@ def render_svg(
     parts.append(_render_face(gid, skin, flat))
     if full:
         parts.append(_render_face_overlays(gid))
-    if ai == 5:
-        parts.append(_render_accessory(5, derived["acc_color"], glasses_color, earring_color, headband_color))
     parts.append(_render_hair_front(hi, gid, hair_col, skin, flat))
-    parts.append(_render_eyes(t.eye_style % 8, eye_col, derived["eye_white"], derived["lid_color"], full))
-    parts.append(_render_eyebrows(t.eyebrows % 5, derived["brow_color"]))
-    parts.append(_render_nose(t.nose % 4, derived["nose_fill"]))
+    if ai == 5:
+        parts.append(_render_accessory(5, derived["acc_color"], glasses_color, earring_color, headband_color, skin))
+    parts.append(_render_eyes(t.eye_style % 9, eye_col, derived["eye_white"], derived["lid_color"], full))
+    parts.append(_render_eyebrows(t.eyebrows % 8, derived["brow_color"]))
+    parts.append(_render_nose(t.nose % 8, derived["nose_fill"]))
     parts.append(_render_mouth(t.mouth % 8, derived["lip_color"], derived["is_dark"]))
     if ai != 0 and ai != 5:
-        parts.append(_render_accessory(ai, derived["acc_color"], glasses_color, earring_color, headband_color))
+        parts.append(_render_accessory(ai, derived["acc_color"], glasses_color, earring_color, headband_color, skin))
     parts.append("</svg>")
     return "".join(p for p in parts if p)
 
@@ -596,26 +599,25 @@ _SKIN_DESC = {0: "porcelain", 1: "ivory", 2: "fair", 3: "light", 4: "sand",
               5: "golden", 6: "warm", 7: "caramel", 8: "brown", 9: "deep"}
 _EYE_STYLE_DESC = {0: "round, wide-open", 1: "small and minimal", 2: "almond-shaped",
                    3: "wide and expressive", 4: "relaxed, half-lidded", 5: "joyful, crescent-shaped",
-                   6: "bright and sparkling", 7: "gentle and narrow"}
-_EYE_COLOR_DESC = {0: "dark brown", 1: "blue", 2: "green", 3: "hazel", 4: "gray"}
-_BROW_DESC = {0: "wispy", 1: "straight", 2: "natural", 3: "elegantly arched", 4: "sharply angled"}
+                   6: "bright and sparkling", 7: "gentle and narrow", 8: "side-looking, shifted"}
+_EYE_COLOR_DESC = {0: "dark brown", 1: "blue", 2: "green", 3: "hazel", 4: "gray",
+                   5: "amber", 6: "violet", 7: "steel gray"}
+_BROW_DESC = {0: "wispy", 1: "straight", 2: "natural", 3: "elegantly arched", 4: "sharply angled",
+              5: "worried, furrowed", 6: "bushy", 7: "thin, delicate"}
 _NOSE_DESC = {0: "a subtle shadow nose", 1: "a small button nose", 2: "a soft curved nose",
-              3: "a button nose with visible nostrils"}
+              3: "a button nose with visible nostrils", 4: "a pointed nose",
+              5: "a wide, broad nose", 6: "a nose with a visible bridge",
+              7: "a small snub nose"}
 _MOUTH_DESC = {0: "a gentle smile", 1: "a calm, neutral expression", 2: "a happy grin",
                3: "a surprised O-shaped mouth", 4: "a confident smirk", 5: "a wide, toothy grin",
                6: "a flat, straight expression", 7: "a soft pout"}
-_HAIR_STYLE_DESC = {0: "bald, with no hair", 1: "short, neatly cropped hair", 2: "bouncy, curly hair",
-                    3: "side-swept hair", 4: "a voluminous puff",
-                    5: "long hair that falls past the shoulders", 6: "a clean bob cut",
-                    7: "a close buzz cut", 8: "flowing, wavy hair", 9: "a neat topknot"}
-_HAIR_COLOR_DESC = {0: "jet black", 1: "espresso brown", 2: "walnut", 3: "honey blonde",
-                    4: "copper red", 5: "silver", 6: "charcoal", 7: "burgundy",
-                    8: "strawberry", 9: "ginger"}
 _ACC_DESC = {0: "", 1: "a beauty mark", 2: "round glasses", 3: "rectangular glasses",
              4: "a dangling earring", 5: "a headband", 6: "freckles", 7: "stud earrings",
-             8: "aviator sunglasses", 9: "a band-aid"}
+             8: "aviator sunglasses", 9: "a band-aid",
+             10: "a left eyebrow slit", 11: "a right eyebrow slit"}
 _BG_DESC = {0: "rose", 1: "olive", 2: "sage", 3: "fern", 4: "mint",
-            5: "ocean", 6: "sky", 7: "lavender", 8: "orchid", 9: "blush"}
+            5: "ocean", 6: "sky", 7: "lavender", 8: "orchid", 9: "blush",
+            10: "lilac", 11: "seafoam"}
 
 
 def _build_paragraph(
@@ -642,15 +644,8 @@ def _build_paragraph(
     if brows:
         parts.append(f"{brows} eyebrows")
 
-    if t.hair_style == 0:
-        parts.append("and am bald" if perspective == "first" else "and is bald")
-    else:
-        hc = _HAIR_COLOR_DESC.get(t.hair_color, "")
-        hs = _HAIR_STYLE_DESC.get(t.hair_style, "")
-        if hs.startswith("a "):
-            parts.append(f"and a {hc} {hs[2:]}")
-        else:
-            parts.append(f"and {hc} {hs}")
+    # All styles render as bald
+    parts.append("and am bald" if perspective == "first" else "and is bald")
 
     desc = parts[0]
     if len(parts) > 2:
@@ -690,12 +685,7 @@ def _build_structured(t, ai: int, include_background: bool = True) -> str:
     if nose:
         lines.append(f"Nose: {nose.lstrip('a ')}")
     lines.append(f"Mouth: {_MOUTH_DESC.get(t.mouth, 'smile')}")
-    if t.hair_style == 0:
-        lines.append("Hair: bald")
-    else:
-        hs = _HAIR_STYLE_DESC.get(t.hair_style, "")
-        hc = _HAIR_COLOR_DESC.get(t.hair_color, "")
-        lines.append(f"Hair: {hc} {hs[2:] if hs.startswith('a ') else hs}")
+    lines.append("Hair: bald")
     acc = _ACC_DESC.get(ai, "")
     if acc:
         lines.append(f"Accessory: {acc}")
@@ -709,13 +699,7 @@ def _build_compact(t, ai: int) -> str:
     parts.append("squircle face")
     parts.append(f"{_SKIN_DESC.get(t.skin_color, 'warm')} skin")
     parts.append(f"{_EYE_COLOR_DESC.get(t.eye_color, 'dark')} {_EYE_STYLE_DESC.get(t.eye_style, 'round')} eyes")
-    if t.hair_style == 0:
-        parts.append("bald")
-    else:
-        raw = _HAIR_STYLE_DESC.get(t.hair_style, "hair")
-        hs = raw.split(",")[-1].strip() if "," in raw else raw
-        hc = _HAIR_COLOR_DESC.get(t.hair_color, "")
-        parts.append(f"{hc} {hs[2:] if hs.startswith('a ') else hs}")
+    parts.append("bald")
     acc = _ACC_DESC.get(ai, "")
     if acc:
         parts.append(acc)

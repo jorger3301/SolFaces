@@ -38,13 +38,13 @@ describe("generateTraits", () => {
       expect(t.skinColor).toBeGreaterThanOrEqual(0);
       expect(t.skinColor).toBeLessThanOrEqual(9);
       expect(t.eyeStyle).toBeGreaterThanOrEqual(0);
-      expect(t.eyeStyle).toBeLessThanOrEqual(7);
+      expect(t.eyeStyle).toBeLessThanOrEqual(8);
       expect(t.eyeColor).toBeGreaterThanOrEqual(0);
-      expect(t.eyeColor).toBeLessThanOrEqual(4);
+      expect(t.eyeColor).toBeLessThanOrEqual(7);
       expect(t.eyebrows).toBeGreaterThanOrEqual(0);
-      expect(t.eyebrows).toBeLessThanOrEqual(4);
+      expect(t.eyebrows).toBeLessThanOrEqual(7);
       expect(t.nose).toBeGreaterThanOrEqual(0);
-      expect(t.nose).toBeLessThanOrEqual(3);
+      expect(t.nose).toBeLessThanOrEqual(7);
       expect(t.mouth).toBeGreaterThanOrEqual(0);
       expect(t.mouth).toBeLessThanOrEqual(7);
       expect(t.hairStyle).toBeGreaterThanOrEqual(0);
@@ -52,9 +52,9 @@ describe("generateTraits", () => {
       expect(t.hairColor).toBeGreaterThanOrEqual(0);
       expect(t.hairColor).toBeLessThanOrEqual(9);
       expect(t.accessory).toBeGreaterThanOrEqual(0);
-      expect(t.accessory).toBeLessThanOrEqual(9);
+      expect(t.accessory).toBeLessThanOrEqual(11);
       expect(t.bgColor).toBeGreaterThanOrEqual(0);
-      expect(t.bgColor).toBeLessThanOrEqual(9);
+      expect(t.bgColor).toBeLessThanOrEqual(11);
     }
   });
 
@@ -79,14 +79,10 @@ describe("generateTraits", () => {
 });
 
 describe("effectiveAccessory", () => {
-  it("suppresses earrings on long hair", () => {
-    // accessory 4 (earring) + hairStyle 5 (long) → 0
-    expect(effectiveAccessory({ ...generateTraits(WALLET), accessory: 4, hairStyle: 5 })).toBe(0);
-    // accessory 7 (stud) + hairStyle 6 (bob) → 0
-    expect(effectiveAccessory({ ...generateTraits(WALLET), accessory: 7, hairStyle: 6 })).toBe(0);
-  });
-
-  it("allows earrings on short hair", () => {
+  it("allows earrings on all hair styles", () => {
+    // No styles cover ears, so earrings are always visible
+    expect(effectiveAccessory({ ...generateTraits(WALLET), accessory: 4, hairStyle: 5 })).toBe(4);
+    expect(effectiveAccessory({ ...generateTraits(WALLET), accessory: 7, hairStyle: 6 })).toBe(7);
     expect(effectiveAccessory({ ...generateTraits(WALLET), accessory: 4, hairStyle: 1 })).toBe(4);
     expect(effectiveAccessory({ ...generateTraits(WALLET), accessory: 7, hairStyle: 3 })).toBe(7);
   });

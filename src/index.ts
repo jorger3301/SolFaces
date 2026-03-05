@@ -21,8 +21,8 @@ export {
   lighten,
   blend,
   luminance,
+  contrastRatio,
   deriveSkinColors,
-  buzzOpacity,
 } from "./core/colors";
 export type { DerivedColors } from "./core/colors";
 
@@ -56,9 +56,11 @@ export { ADJECTIVES, NOUNS, SOLNAMES_VERSION } from "./names";
 export type { NameFormat, SolNameIdentity, ParsedSolName, DeriveOptions } from "./names";
 
 // Themes
+export type { PresetThemeName } from "./themes/presets";
 export {
   PRESET_THEMES,
   getPresetTheme,
+  createTheme,
 } from "./themes/presets";
 
 // Agent tools

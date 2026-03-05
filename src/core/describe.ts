@@ -30,6 +30,7 @@ const EYE_STYLES: Record<number, string> = {
   5: "joyful, crescent-shaped",
   6: "bright and sparkling",
   7: "gentle and narrow",
+  8: "side-looking, shifted",
 };
 
 const EYE_COLORS_DESC: Record<number, string> = {
@@ -38,6 +39,9 @@ const EYE_COLORS_DESC: Record<number, string> = {
   2: "green",
   3: "hazel",
   4: "gray",
+  5: "amber",
+  6: "violet",
+  7: "steel gray",
 };
 
 const EYEBROW_STYLES: Record<number, string> = {
@@ -46,6 +50,9 @@ const EYEBROW_STYLES: Record<number, string> = {
   2: "natural",
   3: "elegantly arched",
   4: "sharply angled",
+  5: "worried, furrowed",
+  6: "bushy",
+  7: "thin, delicate",
 };
 
 const NOSE_STYLES: Record<number, string> = {
@@ -53,6 +60,10 @@ const NOSE_STYLES: Record<number, string> = {
   1: "a small button nose",
   2: "a soft curved nose",
   3: "a button nose with visible nostrils",
+  4: "a pointed nose",
+  5: "a wide, broad nose",
+  6: "a nose with a visible bridge",
+  7: "a small snub nose",
 };
 
 const MOUTH_STYLES: Record<number, string> = {
@@ -66,32 +77,6 @@ const MOUTH_STYLES: Record<number, string> = {
   7: "a soft pout",
 };
 
-const HAIR_STYLES: Record<number, string> = {
-  0: "bald, with no hair",
-  1: "short, neatly cropped hair",
-  2: "bouncy, curly hair",
-  3: "side-swept hair",
-  4: "a voluminous puff",
-  5: "long hair that falls past the shoulders",
-  6: "a clean bob cut",
-  7: "a close buzz cut",
-  8: "flowing, wavy hair",
-  9: "a neat topknot",
-};
-
-const HAIR_COLORS_DESC: Record<number, string> = {
-  0: "jet black",
-  1: "espresso brown",
-  2: "walnut",
-  3: "honey blonde",
-  4: "copper red",
-  5: "silver",
-  6: "charcoal",
-  7: "burgundy",
-  8: "strawberry",
-  9: "ginger",
-};
-
 const ACCESSORY_DESC: Record<number, string> = {
   0: "",
   1: "a beauty mark",
@@ -103,6 +88,8 @@ const ACCESSORY_DESC: Record<number, string> = {
   7: "stud earrings",
   8: "aviator sunglasses",
   9: "a band-aid",
+  10: "a left eyebrow slit",
+  11: "a right eyebrow slit",
 };
 
 const BG_COLORS_DESC: Record<number, string> = {
@@ -116,6 +103,8 @@ const BG_COLORS_DESC: Record<number, string> = {
   7: "lavender",
   8: "orchid",
   9: "blush",
+  10: "lilac",
+  11: "seafoam",
 };
 
 // ─── Description Builder ─────────────────────────────────────
@@ -189,16 +178,8 @@ function buildParagraph(
   const brows = EYEBROW_STYLES[t.eyebrows];
   if (brows) parts.push(`${brows} eyebrows`);
 
-  // Hair
-  const hairStyle = HAIR_STYLES[t.hairStyle] ?? "";
-  const hairColor = HAIR_COLORS_DESC[t.hairColor] ?? "";
-  if (t.hairStyle === 0) {
-    parts.push(perspective === "first" ? "and am bald" : "and is bald");
-  } else if (hairStyle.startsWith("a ")) {
-    parts.push(`and a ${hairColor} ${hairStyle.slice(2)}`);
-  } else {
-    parts.push(`and ${hairColor} ${hairStyle}`);
-  }
+  // Hair (all styles render as bald)
+  parts.push(perspective === "first" ? "and am bald" : "and is bald");
 
   // Build main sentence
   let desc = parts[0];
@@ -254,13 +235,7 @@ function buildStructured(t: SolFaceTraits, includeBg: boolean): string {
 
   lines.push(`Mouth: ${MOUTH_STYLES[t.mouth] ?? "smile"}`);
 
-  if (t.hairStyle === 0) {
-    lines.push("Hair: bald");
-  } else {
-    const hs = HAIR_STYLES[t.hairStyle] ?? "";
-    const hc = HAIR_COLORS_DESC[t.hairColor] ?? "";
-    lines.push(`Hair: ${hc} ${hs.startsWith("a ") ? hs.slice(2) : hs}`);
-  }
+  lines.push("Hair: bald");
 
   const acc = ACCESSORY_DESC[ai];
   if (acc) lines.push(`Accessory: ${acc}`);
@@ -280,14 +255,7 @@ function buildCompact(t: SolFaceTraits): string {
   parts.push(`${SKIN_TONES[t.skinColor] ?? "warm"} skin`);
   parts.push(`${EYE_COLORS_DESC[t.eyeColor] ?? "dark"} ${EYE_STYLES[t.eyeStyle] ?? "round"} eyes`);
 
-  if (t.hairStyle === 0) {
-    parts.push("bald");
-  } else {
-    const raw = HAIR_STYLES[t.hairStyle] ?? "hair";
-    const hs = raw.includes(",") ? raw.replace(/.*,\s*/, "") : raw;
-    const hc = HAIR_COLORS_DESC[t.hairColor] ?? "";
-    parts.push(`${hc} ${hs.startsWith("a ") ? hs.slice(2) : hs}`);
-  }
+  parts.push("bald");
 
   const acc = ACCESSORY_DESC[ai];
   if (acc) parts.push(acc);

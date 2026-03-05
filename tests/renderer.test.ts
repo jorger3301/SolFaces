@@ -100,7 +100,7 @@ describe("renderSolFaceSVG", () => {
     }
   });
 
-  it("renders all 10 hair styles", () => {
+  it("produces valid SVG for all 10 hair style overrides", () => {
     for (let i = 0; i < 10; i++) {
       const svg = renderSolFaceSVG(WALLET, { traitOverrides: { hairStyle: i } });
       expect(svg).toMatch(/^<svg /);
@@ -108,8 +108,8 @@ describe("renderSolFaceSVG", () => {
     }
   });
 
-  it("renders all 10 accessories", () => {
-    for (let i = 0; i < 10; i++) {
+  it("renders all 12 accessories", () => {
+    for (let i = 0; i < 12; i++) {
       const svg = renderSolFaceSVG(WALLET, { traitOverrides: { accessory: i } });
       expect(svg).toMatch(/^<svg /);
       expect(svg).toMatch(/<\/svg>$/);

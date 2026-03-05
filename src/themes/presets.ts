@@ -12,7 +12,8 @@ export const defaultTheme: SolFaceTheme = {};
 
 export const darkTheme: SolFaceTheme = {
   bgColors: ["#1a1b23", "#1e1428", "#0a1e38", "#1b2838", "#201028",
-             "#141a28", "#18122a", "#1a2020", "#221822", "#1e1020"],
+             "#141a28", "#18122a", "#1a2020", "#221822", "#1e1020",
+             "#1c1228", "#0e201a"],
   eyeWhiteColor: "#d8d0c8",
   bgOpacity: 1,
   bgRadius: 4,
@@ -21,7 +22,8 @@ export const darkTheme: SolFaceTheme = {
 
 export const lightTheme: SolFaceTheme = {
   bgColors: ["#f5e8ea", "#f0f0d8", "#e4f0e6", "#d8f0e8", "#e0ece8",
-             "#dce8f0", "#e0e4f0", "#e0d8f0", "#f0e0ee", "#f0d8e4"],
+             "#dce8f0", "#e0e4f0", "#e0d8f0", "#f0e0ee", "#f0d8e4",
+             "#e8d8f0", "#d8f0e8"],
   bgOpacity: 1,
   bgRadius: 8,
 };
@@ -33,7 +35,8 @@ export const monoTheme: SolFaceTheme = {
   hairColors: ["#1a1a1a", "#2a2a2a", "#404040", "#555", "#707070",
                "#888", "#a0a0a0", "#b8b8b8", "#d0d0d0", "#e0e0e0"],
   bgColors: ["#e8e0e0", "#e0e0d0", "#d8e0d8", "#d0e0d8", "#d8e0e0",
-             "#d0d8e0", "#d4d4e0", "#d4d0e0", "#e0d8e0", "#e0d0d8"],
+             "#d0d8e0", "#d4d4e0", "#d4d0e0", "#e0d8e0", "#e0d0d8",
+             "#d8d0e0", "#d0e0d8"],
   mouthColor: "#666",
   eyebrowColor: "#555",
   accessoryColor: "#777",
@@ -69,7 +72,9 @@ export const glassTheme: SolFaceTheme = {
   _specularEnd: 50,
   _lightAngle: 135,
   _rimIntensity: 0.08,
-  _shadow: "0 8px 32px rgba(0,0,0,0.12)",
+  _shadowY: 8,
+  _shadowBlur: 32,
+  _shadowOpacity: 0.12,
 };
 
 export const glassDarkTheme: SolFaceTheme = {
@@ -88,7 +93,9 @@ export const glassDarkTheme: SolFaceTheme = {
   _specularEnd: 40,
   _lightAngle: 135,
   _rimIntensity: 0.05,
-  _shadow: "0 8px 32px rgba(0,0,0,0.25)",
+  _shadowY: 8,
+  _shadowBlur: 32,
+  _shadowOpacity: 0.25,
 };
 
 // ─── React-Only: Pixel Art ──────────────────────
@@ -129,7 +136,11 @@ export const pixelCleanTheme: SolFaceTheme = {
 
 // ─── Theme Map ──────────────────────────────────
 
-export const PRESET_THEMES: Record<string, SolFaceTheme> = {
+/** Names of all built-in preset themes. */
+export type PresetThemeName = "default" | "dark" | "light" | "mono" | "flat" | "transparent" | "glass" | "glassDark" | "pixel" | "pixelRetro" | "pixelClean";
+
+/** Map of all built-in preset themes, keyed by name. */
+export const PRESET_THEMES: Record<PresetThemeName, SolFaceTheme> = {
   default: defaultTheme,
   dark: darkTheme,
   light: lightTheme,
@@ -143,11 +154,48 @@ export const PRESET_THEMES: Record<string, SolFaceTheme> = {
   pixelClean: pixelCleanTheme,
 };
 
+/**
+ * Look up a built-in preset theme by name, optionally merging overrides.
+ *
+ * @param name      Preset theme name (e.g. "glass", "dark", "pixelRetro").
+ * @param overrides Optional partial theme to merge on top of the preset.
+ * @returns The resolved theme object.
+ */
 export function getPresetTheme(
-  name: string,
+  name: PresetThemeName,
   overrides?: Partial<SolFaceTheme>,
 ): SolFaceTheme {
   const base = PRESET_THEMES[name];
   if (!base) return (overrides as SolFaceTheme) ?? {};
   return overrides ? { ...base, ...overrides } : base;
+}
+
+/**
+ * Build a custom theme by starting from a preset mode and merging your overrides.
+ * All SolFaceTheme properties are available for IntelliSense-driven customization.
+ *
+ * @param options  Theme options. Use `mode` to start from a preset base, then override any property.
+ * @returns A fully resolved SolFaceTheme object.
+ *
+ * @example
+ * ```ts
+ * const myTheme = createTheme({ mode: "dark", bgRadius: 12, flat: true });
+ * ```
+ */
+export function createTheme(
+  options: Partial<SolFaceTheme> & {
+    /** Start from a preset mode. Default: none (default gradient theme). */
+    mode?: "light" | "dark" | "transparent" | "mono" | "flat";
+  } = {},
+): SolFaceTheme {
+  const { mode, ...rest } = options;
+  let base: SolFaceTheme = {};
+
+  if (mode === "dark") base = { ...darkTheme };
+  else if (mode === "light") base = { ...lightTheme };
+  else if (mode === "transparent") base = { ...transparentTheme };
+  else if (mode === "mono") base = { ...monoTheme };
+  else if (mode === "flat") base = { ...flatTheme };
+
+  return { ...base, ...rest };
 }

@@ -39,7 +39,7 @@ export interface SolFaceTool {
 const generateSolfaceSvg: SolFaceTool = {
   name: "generate_solface_svg",
   description:
-    "Generate a deterministic SVG avatar for a Solana wallet address. Returns an SVG string with gradient-rich rendering, skin-luminance-driven colors, and 10 accessory types. The same wallet always produces the same face. ~2.56 billion unique combinations.",
+    "Generate a deterministic SVG avatar for a Solana wallet address. Returns an SVG string with gradient-rich rendering, skin-luminance-driven colors, and 12 accessory types. The same wallet always produces the same face. ~53 million unique combinations.",
   parameters: {
     type: "object",
     properties: {
@@ -76,7 +76,7 @@ const generateSolfaceSvg: SolFaceTool = {
     const detail = (params.detail as "full" | "simplified" | "auto") ?? "auto";
     const themeName = params.theme as string | undefined;
     const theme: SolFaceTheme | undefined = themeName
-      ? getPresetTheme(themeName)
+      ? getPresetTheme(themeName as import("../themes/presets").PresetThemeName)
       : undefined;
 
     return renderSolFaceSVG(wallet, { size, theme, enableBlink, detail });
@@ -88,7 +88,7 @@ const generateSolfaceSvg: SolFaceTool = {
 const describeSolface: SolFaceTool = {
   name: "describe_solface",
   description:
-    "Generate a natural language description of a wallet's SolFace avatar. Useful for alt text, profile bios, system prompts, and accessibility. Describes squircle face, skin tone, eye style/color, hair, accessories, and expression.",
+    "Generate a natural language description of a wallet's SolFace avatar. Useful for alt text, profile bios, system prompts, and accessibility. Describes squircle face, skin tone, eye style/color, eyebrows, nose, accessories, and expression.",
   parameters: {
     type: "object",
     properties: {

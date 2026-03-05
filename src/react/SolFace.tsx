@@ -16,34 +16,57 @@ import {
   type SolFaceTraits,
   type SolFaceTheme,
 } from "../core/traits";
-import { deriveSkinColors, darken, lighten, blend, buzzOpacity } from "../core/colors";
+import { deriveSkinColors, darken, lighten, blend } from "../core/colors";
 import { renderSolFaceSVG } from "../core/renderer";
+import { solFaceAltText } from "../core/describe";
 import { deriveName } from "../names";
 import type { NameFormat } from "../names";
 
+/** Props for the `<SolFace>` React component. Extends standard SVG attributes. */
 export interface SolFaceProps extends Omit<SVGAttributes<SVGSVGElement>, "viewBox" | "xmlns"> {
+  /** Solana wallet address (base58). Deterministically generates the avatar. */
   walletAddress: string;
+  /** Avatar size in CSS pixels (width and height). Default: 64. */
   size?: number;
+  /** Enable blink animation. Pass `true` for defaults, or an object for custom timing. Default: false. */
   enableBlink?: boolean | {
+    /** Interval between blinks in seconds. Default: 4. */
     duration?: number;
+    /** Initial delay before first blink in seconds. Default: 0. */
     delay?: number;
   };
+  /** Theme configuration for colors, layout, and rendering style. */
   theme?: SolFaceTheme;
+  /** Override specific trait indices. Merged on top of the deterministic traits. */
   traitOverrides?: Partial<SolFaceTraits>;
+  /** Detail level. "auto" uses full detail at size ≥ 48px. Default: "auto". */
   detail?: "full" | "simplified" | "auto";
+  /** Per-instance color overrides (hex strings). Takes precedence over theme color settings. */
   colorOverrides?: {
+    /** Override skin color (hex). */
     skin?: string;
+    /** Override eye iris color (hex). */
     eyes?: string;
+    /** Override hair color (hex). */
     hair?: string;
+    /** Override background color (hex). */
     bg?: string;
+    /** Override mouth/lip color (hex). */
     mouth?: string;
+    /** Override eyebrow color (hex). */
     eyebrow?: string;
+    /** Override accessory accent color (hex). */
     accessory?: string;
+    /** Override nose shadow/fill color (hex). */
     nose?: string;
+    /** Override eye white (sclera) color (hex). */
     eyeWhite?: string;
   };
+  /** Show a derived SolName label next to the avatar. Default: false. */
   showName?: boolean;
+  /** Position of the name label relative to the avatar. Default: "below". */
   namePosition?: "below" | "above";
+  /** Name display format (e.g. "display", "short", "tag"). Default: "display". */
   nameFormat?: NameFormat;
 }
 
@@ -59,14 +82,8 @@ function djb2(str: string): number {
 
 // ─── Hair Back (behind face) ────────────────────
 
-function HairBack({ hi, id, flat }: { hi: number; id: string; flat: boolean }) {
-  const fill = flat ? "currentColor" : `url(#${id}hg)`;
-  switch (hi) {
-    case 5: return <rect x="10" y="14" width="44" height="42" rx="6" fill={fill} />;
-    case 6: return <rect x="12" y="14" width="40" height="32" rx="8" fill={fill} />;
-    case 8: return <rect x="11" y="14" width="42" height="38" rx="8" fill={fill} />;
-    default: return null;
-  }
+function HairBack(_props: { hi: number; id: string; flat: boolean }) {
+  return null;
 }
 
 // ─── Ears ───────────────────────────────────────
@@ -98,60 +115,8 @@ function FaceOverlays({ id }: { id: string }) {
 
 // ─── Hair Front ─────────────────────────────────
 
-function HairFront({ hi, id, hairCol, skin, flat }: { hi: number; id: string; hairCol: string; skin: string; flat: boolean }) {
-  const fill = flat ? hairCol : `url(#${id}hg)`;
-  switch (hi) {
-    case 0: return null;
-    case 1: return <path d="M14 28 Q14 14 32 12 Q50 14 50 28 L50 22 Q50 12 32 10 Q14 12 14 22 Z" fill={fill} />;
-    case 2:
-      return (
-        <g fill={fill}>
-          <circle cx="20" cy="14" r="5" />
-          <circle cx="28" cy="11" r="5.5" />
-          <circle cx="36" cy="11" r="5.5" />
-          <circle cx="44" cy="14" r="5" />
-          <circle cx="16" cy="20" r="4" />
-          <circle cx="48" cy="20" r="4" />
-        </g>
-      );
-    case 3:
-      return (
-        <g fill={fill}>
-          <path d="M14 26 Q14 12 32 10 Q50 12 50 26 L50 20 Q50 10 32 8 Q14 10 14 20 Z" />
-          <path d="M14 20 Q8 16 10 8 Q14 10 20 16 Z" />
-        </g>
-      );
-    case 4: return <ellipse cx="32" cy="10" rx="14" ry="8" fill={fill} />;
-    case 5: return <path d="M14 28 Q14 12 32 10 Q50 12 50 28 L50 20 Q50 10 32 8 Q14 10 14 20 Z" fill={fill} />;
-    case 6:
-      return (
-        <g fill={fill}>
-          <path d="M14 28 Q14 12 32 10 Q50 12 50 28 L50 20 Q50 10 32 8 Q14 10 14 20 Z" />
-          <rect x="10" y="28" width="8" height="14" rx="4" />
-          <rect x="46" y="28" width="8" height="14" rx="4" />
-        </g>
-      );
-    case 7: {
-      const bOp = buzzOpacity(hairCol, skin);
-      return <rect x="15" y="13" width="34" height="16" rx="10" ry="8" fill={hairCol} opacity={bOp} />;
-    }
-    case 8:
-      return (
-        <g>
-          <path d="M14 28 Q14 12 32 10 Q50 12 50 28 L50 20 Q50 10 32 8 Q14 10 14 20 Z" fill={fill} />
-          <path d="M12 30 Q10 20 14 16" fill="none" stroke={fill} strokeWidth="4" strokeLinecap="round" />
-          <path d="M52 30 Q54 20 50 16" fill="none" stroke={fill} strokeWidth="4" strokeLinecap="round" />
-        </g>
-      );
-    case 9:
-      return (
-        <g fill={fill}>
-          <path d="M14 28 Q14 14 32 12 Q50 14 50 28 L50 22 Q50 12 32 10 Q14 12 14 22 Z" />
-          <ellipse cx="32" cy="6" rx="6" ry="5" />
-        </g>
-      );
-    default: return null;
-  }
+function HairFront(_props: { hi: number; id: string; hairCol: string; flat: boolean }) {
+  return null;
 }
 
 // ─── Eyes ───────────────────────────────────────
@@ -182,8 +147,10 @@ function Eyes({ ei, eyeCol, eyeWhite, lidColor, full }: { ei: number; eyeCol: st
     case 1:
       return (
         <>
-          <circle cx={lx} cy={y} r="2" fill={eyeCol} />
-          <circle cx={rx} cy={y} r="2" fill={eyeCol} />
+          <circle cx={lx} cy={y} r="2.2" fill={eyeCol} />
+          {full && <circle cx={lx + 0.5} cy={y - 0.5} r="0.5" fill="white" opacity="0.4" />}
+          <circle cx={rx} cy={y} r="2.2" fill={eyeCol} />
+          {full && <circle cx={rx + 0.5} cy={y - 0.5} r="0.5" fill="white" opacity="0.4" />}
         </>
       );
     case 2:
@@ -225,8 +192,8 @@ function Eyes({ ei, eyeCol, eyeWhite, lidColor, full }: { ei: number; eyeCol: st
     case 5:
       return (
         <>
-          <path d={`M${lx - 4} ${y} Q${lx} ${y + 4} ${lx + 4} ${y}`} fill="none" stroke={eyeCol} strokeWidth="1.8" strokeLinecap="round" />
-          <path d={`M${rx - 4} ${y} Q${rx} ${y + 4} ${rx + 4} ${y}`} fill="none" stroke={eyeCol} strokeWidth="1.8" strokeLinecap="round" />
+          <path d={`M${lx - 4} ${y} Q${lx} ${y + 4.5} ${lx + 4} ${y}`} fill="none" stroke={eyeCol} strokeWidth="2" strokeLinecap="round" />
+          <path d={`M${rx - 4} ${y} Q${rx} ${y + 4.5} ${rx + 4} ${y}`} fill="none" stroke={eyeCol} strokeWidth="2" strokeLinecap="round" />
         </>
       );
     case 6:
@@ -235,21 +202,9 @@ function Eyes({ ei, eyeCol, eyeWhite, lidColor, full }: { ei: number; eyeCol: st
           <circle cx={lx} cy={y} r="3.5" fill={eyeWhite} />
           <circle cx={lx + 0.5} cy={y} r="2" fill={eyeCol} />
           <circle cx={lx + 1.5} cy={y - 1} r="1" fill="white" opacity="0.9" />
-          {full && (
-            <>
-              <line x1={lx + 2.5} y1={y - 3.5} x2={lx + 4} y2={y - 5} stroke={eyeCol} strokeWidth="0.8" strokeLinecap="round" />
-              <line x1={lx + 3.5} y1={y - 2.5} x2={lx + 5} y2={y - 3.5} stroke={eyeCol} strokeWidth="0.8" strokeLinecap="round" />
-            </>
-          )}
           <circle cx={rx} cy={y} r="3.5" fill={eyeWhite} />
           <circle cx={rx + 0.5} cy={y} r="2" fill={eyeCol} />
           <circle cx={rx + 1.5} cy={y - 1} r="1" fill="white" opacity="0.9" />
-          {full && (
-            <>
-              <line x1={rx + 2.5} y1={y - 3.5} x2={rx + 4} y2={y - 5} stroke={eyeCol} strokeWidth="0.8" strokeLinecap="round" />
-              <line x1={rx + 3.5} y1={y - 2.5} x2={rx + 5} y2={y - 3.5} stroke={eyeCol} strokeWidth="0.8" strokeLinecap="round" />
-            </>
-          )}
           {lids}
         </>
       );
@@ -260,6 +215,18 @@ function Eyes({ ei, eyeCol, eyeWhite, lidColor, full }: { ei: number; eyeCol: st
           <ellipse cx={lx + 0.5} cy={y} rx="2.2" ry="1.2" fill={eyeCol} />
           <ellipse cx={rx} cy={y} rx="4.5" ry="1.5" fill={eyeWhite} />
           <ellipse cx={rx + 0.5} cy={y} rx="2.2" ry="1.2" fill={eyeCol} />
+          {lids}
+        </>
+      );
+    case 8: // Side-look — pupils shifted left
+      return (
+        <>
+          <circle cx={lx} cy={y} r="3.5" fill={eyeWhite} />
+          <circle cx={lx - 1} cy={y} r="2" fill={eyeCol} />
+          {full && <circle cx={lx - 0.3} cy={y - 0.8} r="0.7" fill="white" opacity="0.8" />}
+          <circle cx={rx} cy={y} r="3.5" fill={eyeWhite} />
+          <circle cx={rx - 1} cy={y} r="2" fill={eyeCol} />
+          {full && <circle cx={rx - 0.3} cy={y - 0.8} r="0.7" fill="white" opacity="0.8" />}
           {lids}
         </>
       );
@@ -278,7 +245,7 @@ function Eyes({ ei, eyeCol, eyeWhite, lidColor, full }: { ei: number; eyeCol: st
 
 // ─── Eyebrows ───────────────────────────────────
 
-function Eyebrows({ bi, browColor }: { bi: number; browColor: string }) {
+function Eyebrows({ bi, browColor, full = true }: { bi: number; browColor: string; full?: boolean }) {
   const lx = 25, rx = 39, y = 27;
   switch (bi) {
     case 0:
@@ -316,6 +283,29 @@ function Eyebrows({ bi, browColor }: { bi: number; browColor: string }) {
           <polyline points={`${rx - 3},${y} ${rx},${y - 2} ${rx + 3},${y + 1}`} fill="none" stroke={browColor} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
         </>
       );
+    case 5: // Worried
+      return (
+        <>
+          <line x1={lx - 3} y1={y - 1} x2={lx + 3} y2={y + 1} stroke={browColor} strokeWidth="1.1" strokeLinecap="round" />
+          <line x1={rx - 3} y1={y + 1} x2={rx + 3} y2={y - 1} stroke={browColor} strokeWidth="1.1" strokeLinecap="round" />
+        </>
+      );
+    case 6: { // Bushy
+      const bw = full ? "2.0" : "1.5";
+      return (
+        <>
+          <path d={`M${lx - 4} ${y + 0.5} Q${lx} ${y - 2} ${lx + 4} ${y + 0.5}`} fill="none" stroke={browColor} strokeWidth={bw} strokeLinecap="round" />
+          <path d={`M${rx - 4} ${y + 0.5} Q${rx} ${y - 2} ${rx + 4} ${y + 0.5}`} fill="none" stroke={browColor} strokeWidth={bw} strokeLinecap="round" />
+        </>
+      );
+    }
+    case 7: // Thin
+      return (
+        <>
+          <path d={`M${lx - 3.5} ${y} Q${lx} ${y - 1.5} ${lx + 3.5} ${y}`} fill="none" stroke={browColor} strokeWidth="0.5" strokeLinecap="round" />
+          <path d={`M${rx - 3.5} ${y} Q${rx} ${y - 1.5} ${rx + 3.5} ${y}`} fill="none" stroke={browColor} strokeWidth="0.5" strokeLinecap="round" />
+        </>
+      );
     default: return null;
   }
 }
@@ -333,6 +323,19 @@ function Nose({ ni, noseFill }: { ni: number; noseFill: string }) {
         <>
           <circle cx={cx - 1.8} cy={y} r="1.2" fill={noseFill} opacity="0.4" />
           <circle cx={cx + 1.8} cy={y} r="1.2" fill={noseFill} opacity="0.4" />
+        </>
+      );
+    case 4: // Pointed
+      return <path d={`M${cx} ${y - 2} L${cx - 2} ${y + 1.5} L${cx + 2} ${y + 1.5} Z`} fill={noseFill} opacity="0.4" />;
+    case 5: // Wide
+      return <ellipse cx={cx} cy={y} rx="3.5" ry="1.5" fill={noseFill} opacity="0.35" />;
+    case 6: // Bridge
+      return <line x1={cx} y1={y - 3} x2={cx} y2={y + 1} stroke={noseFill} strokeWidth="1.2" strokeLinecap="round" opacity="0.4" />;
+    case 7: // Snub
+      return (
+        <>
+          <circle cx={cx} cy={y + 0.5} r="2" fill={noseFill} opacity="0.35" />
+          <ellipse cx={cx} cy={y - 0.5} rx="1" ry="0.5" fill={noseFill} opacity="0.15" />
         </>
       );
     default: return <ellipse cx={cx} cy={y} rx="2" ry="1.2" fill={noseFill} opacity="0.35" />;
@@ -357,7 +360,7 @@ function Mouth({ mi, lipColor, isDark }: { mi: number; lipColor: string; isDark:
           <line x1={cx - 4} y1={y + 1.5} x2={cx + 4} y2={y + 1.5} stroke={lipColor} strokeWidth="0.3" opacity="0.3" />
         </>
       );
-    case 6: return <line x1={cx - 4} y1={y + 1} x2={cx + 4} y2={y + 1} stroke={lipColor} strokeWidth="1.5" strokeLinecap="round" />;
+    case 6: return <path d={`M${cx - 4} ${y + 0.5} Q${cx} ${y + 1.5} ${cx + 4} ${y + 0.5}`} fill="none" stroke={lipColor} strokeWidth="1.4" strokeLinecap="round" />;
     case 7:
       return (
         <>
@@ -371,12 +374,12 @@ function Mouth({ mi, lipColor, isDark }: { mi: number; lipColor: string; isDark:
 
 // ─── Accessory ──────────────────────────────────
 
-function Accessory({ ai, glassesColor, earringColor, headbandColor }: {
-  ai: number; glassesColor: string; earringColor: string; headbandColor: string;
+function Accessory({ ai, accessoryColor, glassesColor, earringColor, headbandColor, beautyMarkColor = "#3a2a2a", freckleColor = "#a0785a", skinColor = "#E8BA8B" }: {
+  ai: number; accessoryColor: string; glassesColor: string; earringColor: string; headbandColor: string; beautyMarkColor?: string; freckleColor?: string; skinColor?: string;
 }) {
   switch (ai) {
     case 0: return null;
-    case 1: return <circle cx="40" cy="44" r="0.8" fill="#3a2a2a" />;
+    case 1: return <circle cx="40" cy="44" r="0.8" fill={beautyMarkColor} />;
     case 2:
       return (
         <g fill="none" stroke={glassesColor} strokeWidth="1">
@@ -408,7 +411,7 @@ function Accessory({ ai, glassesColor, earringColor, headbandColor }: {
       return <rect x="13" y="20" width="38" height="3.5" rx="1.5" fill={headbandColor} opacity="0.85" />;
     case 6:
       return (
-        <g fill="#a0785a" opacity="0.35">
+        <g fill={freckleColor} opacity="0.35">
           <circle cx="21" cy="40" r="0.6" />
           <circle cx="23" cy="42" r="0.5" />
           <circle cx="19" cy="41.5" r="0.5" />
@@ -437,33 +440,38 @@ function Accessory({ ai, glassesColor, earringColor, headbandColor }: {
     case 9:
       return (
         <g>
-          <rect x="38" y="38" width="8" height="4" rx="1" fill="#f0d0a0" transform="rotate(-15 42 40)" />
-          <line x1="40" y1="39" x2="40" y2="41" stroke="#c0a080" strokeWidth="0.4" transform="rotate(-15 42 40)" />
-          <line x1="42" y1="39" x2="42" y2="41" stroke="#c0a080" strokeWidth="0.4" transform="rotate(-15 42 40)" />
-          <line x1="44" y1="39" x2="44" y2="41" stroke="#c0a080" strokeWidth="0.4" transform="rotate(-15 42 40)" />
+          <rect x="38" y="38" width="9" height="4.5" rx="1.2" fill="#f0d0a0" transform="rotate(-15 42 40)" />
+          <rect x="39.5" y="38.5" width="6" height="3.5" rx="0.8" fill="#f5ddb5" transform="rotate(-15 42 40)" />
+          <circle cx="42.5" cy="40.25" r="0.5" fill="#d4b898" transform="rotate(-15 42 40)" />
         </g>
       );
+    case 10: // Left Eyebrow Slit
+      return <line x1="23" y1="24.8" x2="23.8" y2="29.2" stroke={skinColor} strokeWidth="1.3" strokeLinecap="butt" />;
+    case 11: // Right Eyebrow Slit
+      return <line x1="41" y1="24.8" x2="40.2" y2="29.2" stroke={skinColor} strokeWidth="1.3" strokeLinecap="butt" />;
     default: return null;
   }
 }
 
 // ─── Pixel Art Wrapper ──────────────────────────
 
-function PixelWrapper({ svgString, size, theme }: { svgString: string; size: number; theme: SolFaceTheme }) {
+function PixelWrapper({ svgString, size, theme, alt = "" }: { svgString: string; size: number; theme: SolFaceTheme; alt?: string }) {
+  const scale = size / 64;
+
   const density = theme._pixelDensity ?? 16;
   const rounded = theme._pixelRounded ?? true;
   const outline = theme._pixelOutline ?? false;
   const outlineColor = theme._pixelOutlineColor ?? "#000";
-  const outlineWidth = theme._pixelOutlineWidth ?? 1;
+  const outlineWidth = Math.max(1, Math.round((theme._pixelOutlineWidth ?? 1) * scale));
   const scanlines = theme._pixelScanlines ?? false;
   const scanlineOpacity = theme._pixelScanlineOpacity ?? 0.08;
-  const scanlineSpacing = theme._pixelScanlineSpacing ?? 2;
+  const scanlineSpacing = Math.max(1, Math.round((theme._pixelScanlineSpacing ?? 2) * scale));
   const grid = theme._pixelGrid ?? false;
   const gridOpacity = theme._pixelGridOpacity ?? 0.06;
   const gridColor = theme._pixelGridColor ?? "#000";
   const shadow = theme._pixelShadow ?? false;
   const shadowColor = theme._pixelShadowColor ?? "rgba(0,0,0,0.3)";
-  const shadowOffset = theme._pixelShadowOffset ?? 2;
+  const shadowOffset = Math.max(1, Math.round((theme._pixelShadowOffset ?? 2) * scale));
   const contrast = theme._pixelContrast;
   const saturation = theme._pixelSaturation;
   const brightness = theme._pixelBrightness;
@@ -496,7 +504,7 @@ function PixelWrapper({ svgString, size, theme }: { svgString: string; size: num
 
   return (
     <div style={containerStyle}>
-      <img src={dataUri} width={density} height={density} style={imgStyle} alt="" />
+      <img src={dataUri} width={density} height={density} style={imgStyle} alt={alt} />
       {scanlines && (
         <div style={{
           position: "absolute", inset: 0,
@@ -521,21 +529,28 @@ function PixelWrapper({ svgString, size, theme }: { svgString: string; size: num
 // ─── Liquid Glass Wrapper ───────────────────────
 
 function GlassWrapper({ children, size, theme }: { children: React.ReactNode; size: number; theme: SolFaceTheme }) {
-  const blurRadius = theme._blurRadius ?? 12;
+  const scale = size / 64;
+
+  const blurRadius = (theme._blurRadius ?? 12) * scale;
   const saturate = theme._saturate ?? 1.8;
   const tintOpacity = theme._tintOpacity ?? 0.12;
   const tintColor = theme._tintColor ?? "rgba(255,255,255,1)";
   const borderOpacity = theme._borderOpacity ?? 0.25;
-  const borderWidth = theme._borderWidth ?? 1;
+  const borderWidth = Math.max(0.5, (theme._borderWidth ?? 1) * scale);
   const borderColor = theme._borderColor ?? `rgba(255,255,255,${borderOpacity})`;
   const specularOpacity = theme._specularOpacity ?? 0.25;
   const specularColor = theme._specularColor ?? "rgba(255,255,255,1)";
   const specularEnd = theme._specularEnd ?? 50;
   const lightAngle = theme._lightAngle ?? 135;
   const rimIntensity = theme._rimIntensity ?? 0.08;
-  const shadowStr = theme._shadow ?? "0 8px 32px rgba(0,0,0,0.12)";
 
-  const bgRadius = theme.bgRadius ?? 16;
+  // Decomposed shadow scales with size; legacy _shadow string used as-is for backward compat
+  const shadowY = Math.round((theme._shadowY ?? 8) * scale);
+  const shadowBlurR = Math.round((theme._shadowBlur ?? 32) * scale);
+  const shadowOpacity = theme._shadowOpacity ?? 0.12;
+  const shadowStr = theme._shadow ?? `0 ${shadowY}px ${shadowBlurR}px rgba(0,0,0,${shadowOpacity})`;
+
+  const bgRadius = (theme.bgRadius ?? 16) * scale;
 
   const containerStyle: CSSProperties = {
     position: "relative",
@@ -622,6 +637,11 @@ export function SolFace({
   const glassesColor = theme?.glassesColor ?? "#4a4a5a";
   const earringColor = theme?.earringColor ?? blend(skin, "#d4a840", 0.4);
   const headbandColor = theme?.headbandColor ?? blend(hairCol, "#c04040", 0.5);
+  const accColor = colorOverrides?.accessory ?? theme?.accessoryColor ?? derived.accessoryColor;
+  const earFillFinal = theme?.earColor ?? derived.earFill;
+  const lidFinal = theme?.lidColor ?? derived.lidColor;
+  const beautyMarkColor = theme?.beautyMarkColor ?? "#3a2a2a";
+  const freckleColor = theme?.freckleColor ?? "#a0785a";
 
   const id = useMemo(() => "sf" + djb2(walletAddress).toString(36), [walletAddress]);
 
@@ -649,7 +669,7 @@ export function SolFace({
       colorOverrides,
       detail: detailProp,
     });
-    return <PixelWrapper svgString={pixelSvg} size={size} theme={theme} />;
+    return <PixelWrapper svgString={pixelSvg} size={size} theme={theme} alt={solFaceAltText(walletAddress)} />;
   }
 
   const svgElement = (
@@ -660,17 +680,16 @@ export function SolFace({
       height={size}
       className={className}
       style={{ display: "block", ...style }}
+      role="img"
+      aria-label={solFaceAltText(walletAddress)}
       {...rest}
     >
       {!flat && (
         <defs>
           <linearGradient id={`${id}sg`} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor={derived.skinHi} />
+            <stop offset="50%" stopColor={skin} />
             <stop offset="100%" stopColor={derived.skinLo} />
-          </linearGradient>
-          <linearGradient id={`${id}hg`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={lighten(hairCol, 0.15)} />
-            <stop offset="100%" stopColor={darken(hairCol, 0.15)} />
           </linearGradient>
           <linearGradient id={`${id}bg`} x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stopColor={lighten(bgCol, 0.12)} />
@@ -679,7 +698,7 @@ export function SolFace({
           {full && cheekEnabled && (
             <>
               <radialGradient id={`${id}glow`} cx="0.5" cy="0.28" r="0.45">
-                <stop offset="0%" stopColor="#ffffff" stopOpacity={0.10} />
+                <stop offset="0%" stopColor="#ffffff" stopOpacity={theme?.glowIntensity ?? 0.10} />
                 <stop offset="100%" stopColor="#ffffff" stopOpacity={0} />
               </radialGradient>
               <radialGradient id={`${id}chin`} cx="0.5" cy="0.85" r="0.35">
@@ -714,26 +733,26 @@ export function SolFace({
 
       <rect x="0" y="0" width="64" height="64" fill={bgFill} opacity={bgOpacity} rx={bgRadius} />
 
-      <HairBack hi={hi} id={id} flat={flat} />
-      <Ears earFill={derived.earFill} earShadow={derived.earShadow} />
-      <rect x="14" y="16" width="36" height="38" rx="12" ry="12" fill={skinFill} />
+      {theme?.hairEnabled !== false && <HairBack hi={hi} id={id} flat={flat} />}
+      {theme?.earsEnabled !== false && <Ears earFill={earFillFinal} earShadow={derived.earShadow} />}
+      <rect x="14" y="16" width="36" height="38" rx="12" ry="12" fill={skinFill} opacity={theme?.skinOpacity ?? 1} />
 
-      {full && cheekEnabled && !flat && <FaceOverlays id={id} />}
+      {full && cheekEnabled && !flat && (theme?.shadowEnabled ?? true) && <FaceOverlays id={id} />}
 
-      {ai === 5 && <Accessory ai={5} glassesColor={glassesColor} earringColor={earringColor} headbandColor={headbandColor} />}
+      {theme?.hairEnabled !== false && <HairFront hi={hi} id={id} hairCol={hairCol} flat={flat} />}
 
-      <HairFront hi={hi} id={id} hairCol={hairCol} skin={skin} flat={flat} />
+      {ai === 5 && theme?.accessoriesEnabled !== false && <Accessory ai={5} accessoryColor={accColor} glassesColor={glassesColor} earringColor={earringColor} headbandColor={headbandColor} beautyMarkColor={beautyMarkColor} freckleColor={freckleColor} skinColor={skin} />}
 
       <g className={blinkEnabled ? `${id}-eyes` : undefined}>
-        <Eyes ei={traits.eyeStyle % 8} eyeCol={eyeCol} eyeWhite={eyeWhite} lidColor={derived.lidColor} full={full} />
+        <Eyes ei={traits.eyeStyle % 9} eyeCol={eyeCol} eyeWhite={eyeWhite} lidColor={lidFinal} full={full} />
       </g>
 
-      <Eyebrows bi={traits.eyebrows % 5} browColor={browColor} />
-      <Nose ni={traits.nose % 4} noseFill={noseFill} />
+      {theme?.eyebrowsEnabled !== false && <Eyebrows bi={traits.eyebrows % 8} browColor={browColor} full={full} />}
+      {theme?.noseEnabled !== false && <Nose ni={traits.nose % 8} noseFill={noseFill} />}
       <Mouth mi={traits.mouth % 8} lipColor={lipColor} isDark={derived.isDark} />
 
-      {ai !== 0 && ai !== 5 && (
-        <Accessory ai={ai} glassesColor={glassesColor} earringColor={earringColor} headbandColor={headbandColor} />
+      {ai !== 0 && ai !== 5 && theme?.accessoriesEnabled !== false && (
+        <Accessory ai={ai} accessoryColor={accColor} glassesColor={glassesColor} earringColor={earringColor} headbandColor={headbandColor} beautyMarkColor={beautyMarkColor} freckleColor={freckleColor} skinColor={skin} />
       )}
 
       {theme?.border && (

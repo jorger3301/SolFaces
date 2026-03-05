@@ -80,7 +80,7 @@ print(json.dumps(get_trait_labels(t)))
   });
 
   it("effective accessory suppression matches", () => {
-    // Test earring (4) + long hair (5) → suppressed to 0
+    // No styles suppress earrings anymore — earrings pass through on all styles
     const tsResult = effectiveAccessory({ ...generateTraits(WALLET), accessory: 4, hairStyle: 5 });
     const pyResult = Number(runPython(`
 from solfaces import generate_traits, effective_accessory
@@ -90,7 +90,7 @@ t.hair_style = 5
 print(effective_accessory(t))
     `));
     expect(pyResult).toBe(tsResult);
-    expect(pyResult).toBe(0);
+    expect(pyResult).toBe(4);
   });
 });
 

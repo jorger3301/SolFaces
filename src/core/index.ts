@@ -21,8 +21,8 @@ export {
   lighten,
   blend,
   luminance,
+  contrastRatio,
   deriveSkinColors,
-  buzzOpacity,
 } from "./colors";
 export type { DerivedColors } from "./colors";
 

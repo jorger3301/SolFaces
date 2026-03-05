@@ -4,6 +4,36 @@ All notable changes to SolFaces will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.3.0] — 2026-03-04
+
+### Added
+
+- **Side-look eye style** — New eye variant (index 8) with pupils shifted left for a glancing expression.
+- **2 new background colors** — Lilac (#a07ab5) and Seafoam (#74b5a0), expanding backgrounds from 10 to 12.
+- **Python: 3 new eyebrow styles** — Worried, Bushy, Thin (indices 5-7) now render in Python, matching TypeScript.
+- **Python: 4 new nose styles** — Pointed, Wide, Bridge, Snub (indices 4-7) now render in Python, matching TypeScript.
+- **Python: Eyebrow slit accessories** — Left (10) and Right (11) eyebrow slits now render in Python.
+- **Python: 3 missing eye colors** — Amber, Violet, Gray added to match TypeScript's 8-color palette.
+- **WCAG contrast ratio utility** — `contrastRatio()` exported from core for accessibility checks.
+
+### Fixed
+
+- **Python eyebrow modulo** — Fixed `% 5` → `% 8` so all 8 eyebrow styles render correctly.
+- **Python nose modulo** — Fixed `% 4` → `% 8` so all 8 nose styles render correctly.
+- **Python skin gradient** — Upgraded from 2-stop to 3-stop gradient, matching TypeScript.
+- **Python headband render order** — Now renders after hair front layer (matching TypeScript).
+- **Python Band-Aid geometry** — Updated to match TypeScript's rect+circle layout.
+- **Python mouth Flat style** — Changed from `<line>` to curved `<path>` matching TypeScript.
+- **Stale hair descriptions** — All description builders (TS + Python) now correctly describe avatars as bald.
+- **`buzzOpacity` removed** — Deleted unused function from exports and tests.
+- **Hair gradient removed** — Removed unused SVG gradient from all three renderers (TS, React, Python).
+
+### Changed
+
+- **Combination count** — Updated from ~3.45B to ~53M (accurate: 10×9×8×8×8×8×12×12).
+- **`effectiveAccessory()` JSDoc** — Removed stale hair-suppression reference.
+- **155 tests** — Updated test count, renamed stale test names, expanded accessory loop to 12.
+
 ## [2.2.0] — 2026-03-01
 
 ### Changed
@@ -84,16 +114,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 - **Flat rendering mode** — `flat: true` disables all SVG gradients for print, email clients, and minimal UIs.
 - **Transparent background mode** — `bgOpacity: 0` for compositing over custom backgrounds.
 - **Blink animation** — CSS-based eye blink with customizable duration and delay.
-- **Color math utilities** — `hexToRgb`, `rgbToHex`, `darken`, `lighten`, `blend`, `luminance`, `deriveSkinColors`, `buzzOpacity`.
+- **Color math utilities** — `hexToRgb`, `rgbToHex`, `darken`, `lighten`, `blend`, `luminance`, `deriveSkinColors`, `contrastRatio`.
 - **PNG rasterization** — `renderSolFacePNG()` for Node.js (via sharp or @resvg/resvg-js), `renderSolFacePNGBrowser()` and `renderSolFacePNGDataURL()` for browsers.
 - **Vanilla JS helpers** — `mountSolFace()`, `setSolFaceImg()`, `autoInit()` for non-React environments.
 - **CDN bundle** — `solfaces/cdn` for `<script>` tag usage with `window.SolFaces` global.
 - **Python port** — Full parity implementation in `python/solfaces.py` with zero dependencies.
 - **Subpath exports** — `solfaces/core`, `solfaces/react`, `solfaces/vanilla`, `solfaces/themes`, `solfaces/agent` for tree-shaking.
 - **Per-instance color overrides** — `colorOverrides` with 9 keys: skin, eyes, hair, bg, mouth, eyebrow, accessory, nose, eyeWhite.
-- **Earring suppression** — Earrings and stud earrings automatically hidden on long and bob hair styles to prevent visual conflicts.
-- **Visual depth layers** — Ears and hair-back rendering behind the face for long, bob, and wavy hair styles.
-- **Test suite** — 116 tests across 8 modules (traits, colors, renderer, describe, names, themes, agent tools, Python parity) with Vitest.
+- **Test suite** — 155 tests across 8 modules (traits, colors, renderer, describe, names, themes, agent tools, Python parity) with Vitest.
 - **CI/CD** — GitHub Actions workflow running typecheck → build → test on Node 18, 20, and 22.
 
 ### Changed

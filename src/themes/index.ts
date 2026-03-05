@@ -1,6 +1,8 @@
+export type { PresetThemeName } from "./presets";
 export {
   PRESET_THEMES,
   getPresetTheme,
+  createTheme,
   defaultTheme,
   darkTheme,
   lightTheme,

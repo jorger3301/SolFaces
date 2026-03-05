@@ -7,7 +7,6 @@ import {
   blend,
   luminance,
   deriveSkinColors,
-  buzzOpacity,
 } from "../src/core/colors";
 
 describe("hexToRgb", () => {
@@ -135,16 +134,3 @@ describe("deriveSkinColors", () => {
   });
 });
 
-describe("buzzOpacity", () => {
-  it("returns higher opacity when hair and skin are similar", () => {
-    const similar = buzzOpacity("#804020", "#7a3d1e");
-    const different = buzzOpacity("#1a1a24", "#faeae5");
-    expect(similar).toBeGreaterThan(different);
-  });
-
-  it("returns value between 0 and 1", () => {
-    const val = buzzOpacity("#804020", "#c59e77");
-    expect(val).toBeGreaterThan(0);
-    expect(val).toBeLessThanOrEqual(1);
-  });
-});

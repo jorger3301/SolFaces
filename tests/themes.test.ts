@@ -39,8 +39,8 @@ describe("getPresetTheme", () => {
 });
 
 describe("theme properties", () => {
-  it("dark theme has 10 bgColors", () => {
-    expect(PRESET_THEMES.dark.bgColors).toHaveLength(10);
+  it("dark theme has 12 bgColors", () => {
+    expect(PRESET_THEMES.dark.bgColors).toHaveLength(12);
   });
 
   it("mono theme has grayscale skin colors", () => {

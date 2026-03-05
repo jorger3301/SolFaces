@@ -81,12 +81,11 @@ describe("compact format", () => {
     expect(desc).not.toContain(".");
   });
 
-  it("does not truncate hair descriptions with commas", () => {
-    // hairStyle=2 is "bouncy, curly hair" — compact should keep "curly hair"
+  it("always describes as bald regardless of hair style", () => {
     const traits = { ...generateTraits(WALLET), hairStyle: 2 };
     const desc = describeTraits(traits, { format: "compact" });
-    expect(desc).toContain("curly hair");
-    expect(desc).not.toMatch(/\bbouncy\b[^,]/); // "bouncy" alone should not appear
+    expect(desc).toContain("bald");
+    expect(desc).not.toMatch(/voluminous|hair/i);
   });
 });
 

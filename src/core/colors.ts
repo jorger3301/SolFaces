@@ -3,6 +3,7 @@
 // Shared by renderer.ts (string) and SolFace.tsx (React)
 // ═══════════════════════════════════════════════════════════════
 
+/** Parse a hex color string (with or without `#`) into an [R, G, B] tuple (0–255). */
 export function hexToRgb(hex: string): [number, number, number] {
   const h = hex.replace("#", "");
   return [
@@ -12,6 +13,7 @@ export function hexToRgb(hex: string): [number, number, number] {
   ];
 }
 
+/** Convert R, G, B values (0–255) to a lowercase hex color string (e.g. `"#ff8040"`). Values are clamped to 0–255. */
 export function rgbToHex(r: number, g: number, b: number): string {
   return (
     "#" +
@@ -25,16 +27,19 @@ export function rgbToHex(r: number, g: number, b: number): string {
   );
 }
 
+/** Darken a hex color by a percentage (0–1). Default: 12%. */
 export function darken(hex: string, pct = 0.12): string {
   const [r, g, b] = hexToRgb(hex);
   return rgbToHex(r * (1 - pct), g * (1 - pct), b * (1 - pct));
 }
 
+/** Lighten a hex color by a percentage (0–1). Default: 15%. */
 export function lighten(hex: string, pct = 0.15): string {
   const [r, g, b] = hexToRgb(hex);
   return rgbToHex(r + (255 - r) * pct, g + (255 - g) * pct, b + (255 - b) * pct);
 }
 
+/** Linearly blend two hex colors. `t=0` returns `a`, `t=1` returns `b`. Default: 50%. */
 export function blend(a: string, b: string, t = 0.5): string {
   const [r1, g1, b1] = hexToRgb(a);
   const [r2, g2, b2] = hexToRgb(b);
@@ -45,9 +50,28 @@ export function blend(a: string, b: string, t = 0.5): string {
   );
 }
 
+/** Compute perceptual luminance (0–255) using ITU-R BT.601 weights. Used internally for skin-relative color derivation. */
 export function luminance(hex: string): number {
   const [r, g, b] = hexToRgb(hex);
-  return (r + g + b) / 3;
+  return 0.299 * r + 0.587 * g + 0.114 * b;
+}
+
+/** WCAG 2.0 relative luminance for contrast ratio computation. */
+function relativeLuminance(hex: string): number {
+  const [r, g, b] = hexToRgb(hex).map(c => {
+    const s = c / 255;
+    return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+/** Compute WCAG 2.0 contrast ratio between two hex colors (1–21). */
+export function contrastRatio(hex1: string, hex2: string): number {
+  const l1 = relativeLuminance(hex1);
+  const l2 = relativeLuminance(hex2);
+  const lighter = Math.max(l1, l2);
+  const darker = Math.min(l1, l2);
+  return (lighter + 0.05) / (darker + 0.05);
 }
 
 export interface DerivedColors {
@@ -67,6 +91,13 @@ export interface DerivedColors {
   accessoryColor: string;
 }
 
+/**
+ * Derive all secondary face colors (lips, cheeks, brows, ears, etc.) from a skin hex color.
+ * Uses luminance-adaptive formulas to ensure natural appearance across all skin tones.
+ *
+ * @param skin  Base skin hex color.
+ * @returns Object with all derived colors and metadata (isDark, cheekOpacity, etc.).
+ */
 export function deriveSkinColors(skin: string): DerivedColors {
   const sL = luminance(skin);
   const isDark = sL < 100;
@@ -104,13 +135,26 @@ export function deriveSkinColors(skin: string): DerivedColors {
   const lipRaw = blend(skin, lipBase, Math.min(0.82, lipBlend));
   const [lr, lg, lb] = hexToRgb(lipRaw);
   const lipD = Math.abs(sr - lr) + Math.abs(sg - lg) + Math.abs(sb - lb);
-  const lipColor = lipD < 60 ? blend(skin, lipBase, 0.78) : lipRaw;
+  let lipColor = lipD < 60 ? blend(skin, lipBase, 0.78) : lipRaw;
+  // Ensure minimum lip/skin contrast for readability
+  let attempts = 0;
+  while (contrastRatio(lipColor, skin) < 1.8 && attempts < 12) {
+    lipColor = darken(lipColor, 0.06);
+    attempts++;
+  }
 
   // Features
-  const browColor = isDark ? lighten(skin, sL < 80 ? 0.35 : 0.25) : darken(skin, 0.55);
-  const noseFill = isDark ? lighten(skin, 0.20) : darken(skin, 0.20);
+  const browColor = isDark
+    ? lighten(skin, sL < 80 ? 0.35 : sL < 100 ? 0.32 : 0.25)
+    : darken(skin, 0.55);
+  const noseShift = 0.20 + 0.06 * (1 - Math.abs(sL - 100) / 140);
+  const noseFill = isDark ? lighten(skin, noseShift) : darken(skin, noseShift);
   const earT = Math.max(0, Math.min(1, (sL - 100) / 60));
-  const earFill = blend(lighten(skin, 0.08), skinMid, earT);
+  let earFill = blend(lighten(skin, 0.08), skinMid, earT);
+  // Ensure ears are at least slightly visible
+  if (contrastRatio(earFill, skin) < 1.05) {
+    earFill = isDark ? lighten(earFill, 0.06) : darken(earFill, 0.06);
+  }
   const earShadow = darken(skin, 0.10 + 0.06 * (1 - Math.min(1, sL / 160)));
   const lidColor = isDark ? lighten(skin, 0.18) : darken(skin, 0.15);
 
@@ -130,13 +174,4 @@ export function deriveSkinColors(skin: string): DerivedColors {
     eyeWhiteAdapted, lidColor,
     accessoryColor,
   };
-}
-
-/** Compute buzz cut opacity — higher when hair/skin contrast is low */
-export function buzzOpacity(hairCol: string, skin: string): number {
-  const [hr, hg, hb] = hexToRgb(hairCol);
-  const [sr, sg, sb] = hexToRgb(skin);
-  return Math.abs(hr - sr) + Math.abs(hg - sg) + Math.abs(hb - sb) < 80
-    ? 0.70
-    : 0.50;
 }
