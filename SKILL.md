@@ -147,7 +147,7 @@ const id = deriveIdentity("7xKXtg...");  // full identity object
 
 ### Python
 ```python
-from solfaces import render_svg, describe_appearance, derive_name
+from solfaces import generate_traits, render_svg, describe_appearance, derive_name
 svg = render_svg("7xKXtg...", size=256)
 name = derive_name("7xKXtg...")
 ```
